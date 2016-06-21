@@ -1,0 +1,12 @@
+apply plugin: 'application'
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':terminalcommunication')
+
+    compile 'com.github.vidstige:jadb:master-SNAPSHOT'
+
+}
+
+mainClassName = 'com.marcoabreu.att.host.HostApp'
