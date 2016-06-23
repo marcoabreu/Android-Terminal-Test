@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AndroidTerminalTest.iml" filepath="$PROJECT_DIR$/AndroidTerminalTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hostapplication/hostapplication.iml" filepath="$PROJECT_DIR$/hostapplication/hostapplication.iml" />
-      <module fileurl="file://$PROJECT_DIR$/terminalcommunication/terminalcommunication.iml" filepath="$PROJECT_DIR$/terminalcommunication/terminalcommunication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AndroidTerminalTest.iml" filepath="$PROJECT_DIR$/.idea/modules/AndroidTerminalTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/hostapplication/hostapplication.iml" filepath="$PROJECT_DIR$/.idea/modules/hostapplication/hostapplication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/terminalcommunication/terminalcommunication.iml" filepath="$PROJECT_DIR$/.idea/modules/terminalcommunication/terminalcommunication.iml" />
     </modules>
   </component>
 </project>
