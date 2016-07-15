@@ -1,22 +1,12 @@
 package com.marcoabreu.att.host;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import se.vidstige.jadb.AdbServerLauncher;
-import se.vidstige.jadb.JadbConnection;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
-import se.vidstige.jadb.Transport;
-import se.vidstige.jadb.managers.Package;
-import se.vidstige.jadb.managers.PackageManager;
+import com.marcoabreu.att.engine.Composite;
+import com.marcoabreu.att.engine.Executor;
+import com.marcoabreu.att.engine.RunStatus;
+import com.marcoabreu.att.engine.Sequence;
 
 public class HostApp {
+    /*
     public static void main(String args[]) {
         System.out.println("Test");
 
@@ -39,6 +29,8 @@ public class HostApp {
 
             //Launch app
             PackageManager pm = new PackageManager(curDevice);
+            //TODO PackageManager install app if not installed and execute
+            //TODO: adb shell pm grant com.your.package android.permission.WRITE_EXTERNAL_STORAGE to grant all permissions
             pm.launch(new Package("com.marcoabreu.att"));
             Thread.sleep(5000);
         } catch (IOException e) {
@@ -72,6 +64,93 @@ public class HostApp {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }*/
+
+    /*public static void main(String args[]) {
+        Composite sequence = new Sequence(
+                new Action(() -> {
+                    System.out.println("Action1");
+                    try { Thread.sleep(200); } catch(Exception ex) { return false; }
+                    return true;
+                }),
+                new Action(() -> {
+                    System.out.println("Action2");
+                    try { Thread.sleep(200); } catch(Exception ex) { return false; }
+                    return true;
+                }),
+                new IfStatement(() -> true,
+                    new Action(() -> {
+                        System.out.println("Hello from the IfStatement");
+                        return true;
+                    })),
+                new Action(() -> {
+                    System.out.println("Action3");
+                    try { Thread.sleep(200); } catch(Exception ex) { return false; }
+                    return true;
+                }),
+                new IfStatement(() -> false,
+                    new Action(() -> {
+                        System.out.println("This should not be called");
+                        return true;
+                    }),
+                    new Action(() -> {
+                        System.out.println("Hello from the else-case of the IfStatement");
+                        return true;
+                    })
+                ),
+                new Action(() -> {
+                    System.out.println("Action4");
+                    try { Thread.sleep(200); } catch(Exception ex) { return false; }
+                    return true;
+                })
+            );
+
+        Composite repeat = new Repeat(5,
+            new Action(() -> {
+                System.out.println("Repeat this 5 times, Part 1");
+                return true;
+            }),
+            new Action(() -> {
+                System.out.println("Repeat this 5 times, Part 2");
+                return true;
+            })
+        );
+
+        Date end = new Date(new Date().getTime() + 5000);
+        Composite repeat2 = new Repeat(() -> new Date().after(end),
+            new Action(() -> {
+                System.out.println("It's currently " + new Date().toString());
+                try { Thread.sleep(200); } catch(Exception ex) { return false; }
+                return true;
+            })
+        );
+
+        Composite compositeToExecute = new Sequence(
+            sequence,
+            repeat,
+            repeat2
+        );
+
+        try(Executor ex = new Executor(compositeToExecute)) {
+            ex.start();
+            while(ex.execute(100) == RunStatus.RUNNING) {
+            }
+        } catch(Exception e) {
+
+        }
+    }*/
+
+    public static void main(String args[]) {
+        Composite compositeToExecute = new Sequence(
+        );
+
+        try(Executor ex = new Executor(compositeToExecute)) {
+            ex.start();
+            while(ex.execute(100) == RunStatus.RUNNING) {
+            }
+        } catch(Exception e) {
+
         }
     }
 }

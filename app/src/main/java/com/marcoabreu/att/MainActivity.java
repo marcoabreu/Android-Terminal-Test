@@ -1,13 +1,14 @@
 package com.marcoabreu.att;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.marcoabreu.att.compiler.BeanCompiler;
+import com.marcoabreu.att.compiler.CompilerException;
+import com.marcoabreu.att.scripts.CallScript;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,15 +23,13 @@ import java.net.SocketException;
 import java.util.Date;
 import java.util.Enumeration;
 
+import bsh.EvalError;
+
 public class MainActivity extends AppCompatActivity {
     TextView info, infoip, msg;
+    Button compilerTestButton;
     String message = "";
     ServerSocket serverSocket;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +39,93 @@ public class MainActivity extends AppCompatActivity {
         info = (TextView) findViewById(R.id.textViewInfo);
         infoip = (TextView) findViewById(R.id.textViewInfoIp);
         msg = (TextView) findViewById(R.id.textViewMsg);
+        compilerTestButton = (Button) findViewById(R.id.button);
+
+        compilerTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                compilerTest();
+            }
+        });
 
         Thread socketServerThread = new Thread(new SocketServerThread());
         socketServerThread.start();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
+    }
+
+    private void compilerTest() {
+        /*final String code = "import android.content.Intent;\n" +
+                "import android.net.Uri;" +
+                "    String url = \"tel:\" + phonenumber;\n" +
+                "    Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse(url));" +
+                "    myapp.startActivity(intent);";*/
+
+
+        final String code = "import com.marcoabreu.att.scripts.CallScript;\n" +
+                "        CallScript script = new CallScript();\n" +
+                "        script.callNumber(AppActivity, \"3344444555\");";
+
+        final String code2 = "import com.marcoabreu.att.scripts.CallScript;\n" +
+                "        CallScript script = new CallScript();\n" +
+                "        script.endCall(AppActivity);";
+
+        BeanCompiler compiler = new BeanCompiler();
+
+        //compiler.loadSource("C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\app\\src\\main\\java\\com\\marcoabreu\\att\\scripts\\CallScript.java");
+
+        compiler.loadParameter("AppActivity", this);
+        //compiler.loadParameter("phonenumber", "4393949394399");
+
+
+
+        compiler.loadCode(code);
+
+        try {
+            compiler.execute();
+        } catch (EvalError evalError) {
+            evalError.printStackTrace();
+        } catch (CompilerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for(int i = 0; i < 50; i++) {
+            new CallScript().getCallState(this);
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+
+        compiler.clear();
+        compiler.loadParameter("AppActivity", this);
+        compiler.loadCode(code2);
+        try {
+            compiler.execute();
+        } catch (EvalError evalError) {
+            evalError.printStackTrace();
+        } catch (CompilerException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for(int i = 0; i < 10; i++) {
+            new CallScript().getCallState(this);
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -60,46 +140,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.marcoabreu.att/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.marcoabreu.att/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
     }
 
     private class SocketServerThread extends Thread {
