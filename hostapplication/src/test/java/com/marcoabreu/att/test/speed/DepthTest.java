@@ -17,10 +17,10 @@ import java.util.Date;
 public class DepthTest {
     private static final int MAX_DEPTH = 5;
     public static void depthTest() {
-        Date startDate = new Date();;
-        Date startedDate = new Date();;
-        Date actionDate = new Date();;
-        Date finishDate = new Date();;
+        Date startDate = new Date();
+        Date startedDate = new Date();
+        Date actionDate = new Date();
+        Date finishDate = new Date();
 
         Composite ss = new Action(() -> {
             actionDate.setTime(new Date().getTime());

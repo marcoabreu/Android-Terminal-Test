@@ -1,0 +1,62 @@
+<Profile>
+    <Id>C2.0.0</Id>
+    <Name>Test Profile C2.0.0</Name>
+    <Description>This is a test profile 2</Description>
+
+    <Sequence name="MainSequence">
+        <Action path="Peripherals/Koppelfeld/SetSignals" name="Set up Koppelfeld">
+            <Parameter key="3G_1" value="20" />
+            <Parameter key="3G_2" value="20" />
+            <Parameter key="3G_3" value="20" />
+            <Parameter key="3G_4" value="40" />
+            <Parameter key="2G_1" value="0" />
+            <Parameter key="noise_1" value="93" /> <!-- setting to 93 not required, this is default upon start. Just here to not forget about it -->
+        </Action>
+
+        <Action path="Connectivity/AwaitConnectivity" name="Await 3G" timeout="60000">
+            <Parameter key="networkType" value="3G" /> <!-- TODO: CHeck if connected to particular 3G cell -->
+        </Action>
+
+        <Action path="Calls/StartCall" name="Call device1->device2" timeout="60000">
+            <Parameter key="callingDevice" value="device1" />
+            <Parameter key="calledDevice" value="device2" />
+        </Action>
+
+        <Action path="Calls/PickUpCall" name="PickUp Call device1->device2" timeout="60000">
+            <Parameter key="device" value="device2" />
+        </Action>
+
+        <Action path="Utilities/Sleep" name="Wait 10s">
+            <Parameter key="duration" value="10000" />
+        </Action>
+
+        <Action path="Peripherals/Koppelfeld/SetSignals" name="Disable 3G">
+            <Parameter key="3G_1" value="93" />
+            <Parameter key="3G_2" value="93" />
+            <Parameter key="3G_3" value="93" />
+            <Parameter key="3G_4" value="93" />
+        </Action>
+
+        <Action path="Connectivity/AwaitConnectivity" name="Await 2G" timeout="60000">
+            <Parameter key="networkType" value="2G" />
+        </Action>
+
+        <If name="Fail if call aborted">
+            <Condition>TelephonyManager.getCallState() != CallState.ON_CALL</Condition>
+            <TrueCase>
+                <Action path="Utilities/Abort">
+                    <Parameter key="message" value="Call aborted upon cell switch" />
+                </Action>
+            </TrueCase>
+        </If>
+
+        <Action path="Utilities/Sleep" name="Wait 10s">
+            <Parameter key="duration" value="10000" />
+        </Action>
+
+        <Action path="Calls/LayOffCall" name="LayOff Call" timeout="60000">
+            <Parameter key="executionDevice" value="device1" />
+            <Parameter key="validationDevice" value="device1" />
+        </Action>
+    </Sequence>
+</Profile>

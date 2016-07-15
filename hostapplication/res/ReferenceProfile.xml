@@ -1,0 +1,34 @@
+<Profile>
+    <Id>C1.0.0</Id>
+    <Name>Test Profile C1.0.0</Name>
+    <Description>This is a test profile</Description>
+
+    <Sequence name="MainSequence">
+        <Action path="Calls/StartCall" name="Call device1->device2" timeout="60000">
+            <Parameter key="phonenumber" value="+491236445" />
+            <Parameter key="device" value="device1" />
+        </Action>
+
+        <Action path="Calls/PickUpCall" name="PickUp Call device1->device2" timeout="60000">
+            <Parameter key="device" value="device2" />
+        </Action>
+
+        <Action path="Utilities/Stopwatch" name="Start stopwatch">
+            <Parameter key="action" value="start" />
+        </Action>
+
+        <Action path="IO/UserMessage" name="Speech test">
+            <Parameter key="message" value="Test speech quality!" />
+        </Action>
+
+        <Action path="Utilities/Stopwatch" name="Wait for 1 min call duration">
+            <Parameter key="action" value="await" />
+            <Parameter key="duration" value="60000" />
+        </Action>
+
+        <Action path="Calls/LayOffCall" name="LayOff Call" timeout="60000">
+            <Parameter key="executionDevice" value="device2" />
+            <Parameter key="validationDevice" value="device1" />
+        </Action>
+    </Sequence>
+</Profile>
