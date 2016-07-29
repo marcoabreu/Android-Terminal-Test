@@ -2,7 +2,7 @@
     <Id>C2.0.0</Id>
     <Name>Test Profile C2.0.0</Name>
     <Description>This is a test profile 2</Description>
-
++
     <Sequence name="MainSequence">
         <Action path="Peripherals/Koppelfeld/SetSignals" name="Set up Koppelfeld">
             <Parameter key="3G_1" value="20" />
@@ -17,10 +17,16 @@
             <Parameter key="networkType" value="3G" /> <!-- TODO: CHeck if connected to particular 3G cell -->
         </Action>
 
-        <Action path="Calls/StartCall" name="Call device1->device2" timeout="60000">
+        <!-- <Action path="Calls/StartCall" name="Call device1->device2" timeout="60000">
             <Parameter key="callingDevice" value="device1" />
             <Parameter key="calledDevice" value="device2" />
-        </Action>
+        </Action> -->
+
+        <ActionDevice targetDevice="device1" path="Calls/StartCall" name="Call device1->device2" timeout="60000">
+            <ParameterActionDevice key="number" targetDevice="device1" path="Device/DeviceInformations" method="getPhoneNumber" timeout="60000">
+
+            </ParameterActionDevice>
+        </ActionDevice>
 
         <Action path="Calls/PickUpCall" name="PickUp Call device1->device2" timeout="60000">
             <Parameter key="device" value="device2" />

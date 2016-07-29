@@ -1,9 +1,14 @@
 package com.marcoabreu.att.host;
 
-import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.engine.Executor;
-import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.engine.Sequence;
+import com.marcoabreu.att.profile.AttActionDevice;
+import com.marcoabreu.att.profile.AttActionHost;
+import com.marcoabreu.att.profile.AttParameterActionDevice;
+import com.marcoabreu.att.profile.AttParameterText;
+import com.marcoabreu.att.profile.AttProfile;
+import com.marcoabreu.att.profile.AttSleep;
+import com.marcoabreu.att.profile.ProfileMarshaller;
+
+import javax.xml.bind.JAXBException;
 
 public class HostApp {
     /*
@@ -141,7 +146,7 @@ public class HostApp {
         }
     }*/
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         Composite compositeToExecute = new Sequence(
         );
 
@@ -151,6 +156,89 @@ public class HostApp {
             }
         } catch(Exception e) {
 
+        }
+    }*/
+
+    public static void main(String args[]) {
+        AttProfile profile = new AttProfile();
+        profile.setDescription("Testdescription");
+        profile.setIdentifier("TestId");
+        profile.setName("Testname");
+
+        AttActionHost action1 = new AttActionHost();
+        action1.setName("Set up Koppelfeld");
+        action1.setMethod("SetSignals");
+        action1.setPath("Peripherals/Koppelfeld");
+        action1.setTimeoutMs(60000);
+        action1.addParameter(new AttParameterText("3G_1", "20"));
+        action1.addParameter(new AttParameterText("3G_2", "20"));
+        action1.addParameter(new AttParameterText("3G_3", "20"));
+        action1.addParameter(new AttParameterText("3G_4", "40"));
+        action1.addParameter(new AttParameterText("2G_1", "0"));
+        action1.addParameter(new AttParameterText("noise1", "93"));
+        profile.addChild(action1);
+
+        AttActionDevice action2 = new AttActionDevice();
+        action2.setTargetDevice("device1");
+        action2.setName("Await 3G");
+        action2.setMethod("AwaitConnectivity");
+        action2.setPath("Network/Connectivity");
+        action2.setTimeoutMs(60000);
+        action2.addParameter(new AttParameterText("networkType", "3G"));
+        profile.addChild(action2);
+
+        AttActionDevice action3 = new AttActionDevice();
+        action3.setTargetDevice("device1");
+        action3.setName("Call device2");
+        action3.setMethod("StartCall");
+        action3.setPath("Phone/Calls");
+        action3.setTimeoutMs(60000);
+        profile.addChild(action3);
+
+        AttParameterActionDevice deviceActionParam1 = new AttParameterActionDevice();
+        deviceActionParam1.setKey("number");
+        deviceActionParam1.setTargetDevice("device2");
+        deviceActionParam1.setMethod("GetPhoneNumber");
+        deviceActionParam1.setPath("Phone/Informations");
+        deviceActionParam1.setTimeoutMs(60000);
+        action3.addParameter(deviceActionParam1);
+
+        AttActionDevice action4 = new AttActionDevice();
+        action4.setTargetDevice("device2");
+        action4.setName("Pickup call");
+        action4.setMethod("PickupCall");
+        action4.setPath("Phone/Calls");
+        action4.setTimeoutMs(60000);
+        profile.addChild(action4);
+
+        AttSleep sleep1 = new AttSleep(10000);
+        sleep1.setName("Wait 10s");
+        profile.addChild(sleep1);
+
+        AttActionHost action5 = new AttActionHost();
+        action5.setName("Disable 3G");
+        action5.setMethod("SetSignals");
+        action5.setPath("Peripherals/Koppelfeld");
+        action5.setTimeoutMs(60000);
+        action5.addParameter(new AttParameterText("3G_1", "93"));
+        action5.addParameter(new AttParameterText("3G_2", "93"));
+        action5.addParameter(new AttParameterText("3G_3", "93"));
+        action5.addParameter(new AttParameterText("3G_4", "93"));
+        profile.addChild(action5);
+
+        AttActionDevice action6 = new AttActionDevice();
+        action6.setTargetDevice("device1");
+        action6.setName("Await 2G");
+        action6.setMethod("AwaitConnectivity");
+        action6.setPath("Network/Connectivity");
+        action6.setTimeoutMs(60000);
+        action6.addParameter(new AttParameterText("networkType", "2G"));
+        profile.addChild(action6);
+
+        try {
+            ProfileMarshaller.saveProfile(profile, "");
+        } catch (JAXBException e) {
+            e.printStackTrace();
         }
     }
 }
