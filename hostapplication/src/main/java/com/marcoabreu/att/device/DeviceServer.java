@@ -41,7 +41,7 @@ public class DeviceServer {
     }
 
     public void stop() {
-
+        //TODO: Close listener thread and close connection to all devices
     }
 
     public void registerMessageListener(DeviceMessageListener listener) {
@@ -54,7 +54,7 @@ public class DeviceServer {
 
     public void invokeOnMessage(PairedDevice device, BaseMessage message) {
         for(DeviceMessageListener listener : listeners) {
-            listener.onMessage(device, message, this);
+            listener.onMessage(device, message);
         }
     }
 

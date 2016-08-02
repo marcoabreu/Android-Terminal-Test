@@ -14,10 +14,10 @@ public class FutureResponse<T extends BaseMessage> implements Future<T> {
     private final Object lockObject = new Object();
     private BaseMessage response = null;
 
-    public FutureResponse(BaseMessage sentMessage){
-        new DeviceMessageListener() {
+    public FutureResponse(BaseMessage sentMessage, DeviceServer deviceServer){
+        deviceServer.registerMessageListener(new DeviceMessageListener() {
             @Override
-            public void onMessage(PairedDevice device, BaseMessage message, DeviceServer deviceServer) {
+            public void onMessage(PairedDevice device, BaseMessage message) {
                 if(message.getTransactionId() == sentMessage.getTransactionId()) {
                     setResponse(message);
 
@@ -25,7 +25,7 @@ public class FutureResponse<T extends BaseMessage> implements Future<T> {
                     deviceServer.removeMessageListener(this);
                 }
             }
-        };
+        });
     }
 
     private void setResponse(BaseMessage response) {
