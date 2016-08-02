@@ -1,4 +1,4 @@
-package com.marcoabreu.att.profile;
+package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;

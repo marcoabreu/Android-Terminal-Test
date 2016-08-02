@@ -1,7 +1,4 @@
-package com.marcoabreu.att.profile;
-
-import com.marcoabreu.att.engine.Action;
-import com.marcoabreu.att.engine.Composite;
+package com.marcoabreu.att.profile.data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -11,24 +8,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Created by AbreuM on 29.07.2016.
  */
-@XmlRootElement(name = "ActionDevice")
+@XmlRootElement(name = "ParameterScriptDevice")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class AttActionDevice extends AttAction {
-
+public class AttParameterScriptDevice extends AttParameterScript {
     @XmlAttribute(name = "targetDevice", required = true)
     private String targetDevice;
 
     @Override
-    public Composite convertLogic() {
-        return new Action(() -> {
-            //Load file content
+    public Object getValue() {
+        //Load file content
 
-            //Send to device compiler
+        //Send to device compiler
 
-            //Execute method
+        //Execute method
 
-            throw new RuntimeException();
-        });
+        throw new RuntimeException();
+    }
+
+    @Override
+    public void init() {
+        //TODO
     }
 
     public String getTargetDevice() {

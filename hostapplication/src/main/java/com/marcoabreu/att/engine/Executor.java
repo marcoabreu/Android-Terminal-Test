@@ -12,7 +12,6 @@ import java.util.concurrent.TimeoutException;
  * Created by AbreuM on 30.06.2016.
  */
 public class Executor implements AutoCloseable {
-    //private static final ExecutorService threadPool = Executors.newFixedThreadPool(10); //TODO: Configurable
     private static final ExecutorService threadPool = Executors.newCachedThreadPool();
     private final Composite composite;
     private Future<RunStatus> executingFuture;

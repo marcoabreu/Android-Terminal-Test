@@ -6,7 +6,8 @@ dependencies {
     compile project(':terminalcommunication')
 
     compile 'com.github.marcoabreu:jadb:b2ab545'
-
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile 'org.apache-extras.beanshell:bsh:2.0b6'
 }
 
 mainClassName = 'com.marcoabreu.att.host.HostApp'

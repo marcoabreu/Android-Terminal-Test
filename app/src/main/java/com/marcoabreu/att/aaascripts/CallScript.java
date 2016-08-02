@@ -1,4 +1,4 @@
-package com.marcoabreu.att.scripts;
+package com.marcoabreu.att.aaascripts;
 
 import android.Manifest;
 import android.app.Activity;

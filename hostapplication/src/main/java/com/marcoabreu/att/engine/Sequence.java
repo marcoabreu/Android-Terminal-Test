@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Composite which executes other composites in sequence
@@ -60,5 +61,34 @@ public class Sequence extends Composite {
     public void stop() {
         currentChildren.clear();
         runningChild = null;
+    }
+
+    /**
+     * Replaces a child with the passed composite while keeping the sequence in order
+     * @param childToReplace Child to be replaced
+     * @param newChild New child
+     * @throws IllegalStateException Thrown when called while composite is running
+     * @throws NoSuchElementException Thrown when composite is not a child of this sequence
+     */
+    public void replaceChild(Composite childToReplace, Composite newChild) {
+        if(currentChildren != null && !currentChildren.isEmpty()) {
+            throw new IllegalStateException("You may not replace a child of a running composite");
+        }
+
+        int indexToReplace = children.indexOf(childToReplace);
+
+        if(indexToReplace == -1) {
+            throw new NoSuchElementException("Composite not found");
+        }
+
+        children.set(indexToReplace, newChild);
+    }
+
+    public List<Composite> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Composite> children) {
+        this.children = children;
     }
 }

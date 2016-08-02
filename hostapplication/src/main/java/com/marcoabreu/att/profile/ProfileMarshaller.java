@@ -1,5 +1,7 @@
 package com.marcoabreu.att.profile;
 
+import com.marcoabreu.att.profile.data.AttProfile;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;

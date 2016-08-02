@@ -1,12 +1,13 @@
 package com.marcoabreu.att.host;
 
-import com.marcoabreu.att.profile.AttActionDevice;
-import com.marcoabreu.att.profile.AttActionHost;
-import com.marcoabreu.att.profile.AttParameterActionDevice;
-import com.marcoabreu.att.profile.AttParameterText;
-import com.marcoabreu.att.profile.AttProfile;
-import com.marcoabreu.att.profile.AttSleep;
+import com.marcoabreu.att.engine.RunStatus;
+import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
+import com.marcoabreu.att.profile.data.AttActionHost;
+import com.marcoabreu.att.profile.data.AttParameterScriptHost;
+import com.marcoabreu.att.profile.data.AttParameterText;
+import com.marcoabreu.att.profile.data.AttProfile;
+import com.marcoabreu.att.profile.data.AttSleep;
 
 import javax.xml.bind.JAXBException;
 
@@ -159,7 +160,7 @@ public class HostApp {
         }
     }*/
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         AttProfile profile = new AttProfile();
         profile.setDescription("Testdescription");
         profile.setIdentifier("TestId");
@@ -167,7 +168,7 @@ public class HostApp {
 
         AttActionHost action1 = new AttActionHost();
         action1.setName("Set up Koppelfeld");
-        action1.setMethod("SetSignals");
+        action1.setMethod("setSignals");
         action1.setPath("Peripherals/Koppelfeld");
         action1.setTimeoutMs(60000);
         action1.addParameter(new AttParameterText("3G_1", "20"));
@@ -195,7 +196,7 @@ public class HostApp {
         action3.setTimeoutMs(60000);
         profile.addChild(action3);
 
-        AttParameterActionDevice deviceActionParam1 = new AttParameterActionDevice();
+        AttParameterScriptDevice deviceActionParam1 = new AttParameterScriptDevice();
         deviceActionParam1.setKey("number");
         deviceActionParam1.setTargetDevice("device2");
         deviceActionParam1.setMethod("GetPhoneNumber");
@@ -217,7 +218,7 @@ public class HostApp {
 
         AttActionHost action5 = new AttActionHost();
         action5.setName("Disable 3G");
-        action5.setMethod("SetSignals");
+        action5.setMethod("setSignals");
         action5.setPath("Peripherals/Koppelfeld");
         action5.setTimeoutMs(60000);
         action5.addParameter(new AttParameterText("3G_1", "93"));
@@ -239,6 +240,76 @@ public class HostApp {
             ProfileMarshaller.saveProfile(profile, "");
         } catch (JAXBException e) {
             e.printStackTrace();
+        }
+
+        ProfileExecutor pe = new ProfileExecutor(profile);
+
+        pe.start();
+    }*/
+
+    public static void main(String args[]) {
+        AttProfile profile = new AttProfile();
+        profile.setDescription("Testdescription");
+        profile.setIdentifier("TestId");
+        profile.setName("Testname");
+
+        AttActionHost action1 = new AttActionHost();
+        action1.setName("Set up Koppelfeld");
+        action1.setMethod("setSignals");
+        action1.setPath("Peripherals/Koppelfeld");
+        action1.setTimeoutMs(60000);
+        action1.addParameter(new AttParameterText("3G_1", "20"));
+        action1.addParameter(new AttParameterText("3G_2", "20"));
+        action1.addParameter(new AttParameterText("3G_3", "20"));
+        action1.addParameter(new AttParameterText("3G_4", "40"));
+        action1.addParameter(new AttParameterText("2G_1", "0"));
+        action1.addParameter(new AttParameterText("noise1", "93"));
+        profile.addChild(action1);
+
+        AttSleep sleep1 = new AttSleep(10000);
+        sleep1.setName("Wait 10s");
+        profile.addChild(sleep1);
+
+        AttActionHost action5 = new AttActionHost();
+        action5.setName("Disable 3G");
+        action5.setMethod("setSignals");
+        action5.setPath("Peripherals/Koppelfeld");
+        action5.setTimeoutMs(60000);
+        action5.addParameter(new AttParameterText("3G_1", "93"));
+        action5.addParameter(new AttParameterText("3G_2", "93"));
+        action5.addParameter(new AttParameterText("3G_3", "93"));
+        action5.addParameter(new AttParameterText("3G_4", "93"));
+        profile.addChild(action5);
+
+        AttParameterScriptHost deviceHostParam1 = new AttParameterScriptHost();
+        deviceHostParam1.setKey("random");
+        deviceHostParam1.setMethod("generateRandom");
+        deviceHostParam1.setPath("Peripherals/Koppelfeld");
+        deviceHostParam1.setTimeoutMs(60000);
+        action5.addParameter(deviceHostParam1);
+
+        try {
+            ProfileMarshaller.saveProfile(profile, "");
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+
+        ProfileExecutor pe = new ProfileExecutor(profile);
+
+        pe.start();
+
+        while(true) {
+            RunStatus runState = pe.getRunState();
+            System.out.println(runState);
+            if(runState != RunStatus.RUNNING) {
+                break;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

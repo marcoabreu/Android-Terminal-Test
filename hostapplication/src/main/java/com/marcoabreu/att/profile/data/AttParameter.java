@@ -1,4 +1,4 @@
-package com.marcoabreu.att.profile;
+package com.marcoabreu.att.profile.data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -17,6 +17,8 @@ public abstract class AttParameter {
     }
 
     public abstract Object getValue();
+
+    public abstract void init();
 
     public AttParameter(String key) {
         this.key = key;

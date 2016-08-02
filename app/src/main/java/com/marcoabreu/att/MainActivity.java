@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import com.marcoabreu.att.compiler.BeanCompiler;
 import com.marcoabreu.att.compiler.CompilerException;
-import com.marcoabreu.att.scripts.CallScript;
+import com.marcoabreu.att.aaascripts.CallScript;
 
 import java.io.BufferedReader;
 import java.io.IOException;

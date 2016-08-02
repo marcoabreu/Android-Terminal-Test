@@ -1,4 +1,4 @@
-package com.marcoabreu.att.profile;
+package com.marcoabreu.att.profile.data;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,6 +18,10 @@ public class AttParameterText extends AttParameter {
     public AttParameterText(String key, String textValue) {
         super(key);
         this.textValue = textValue;
+    }
+
+    @Override
+    public void init() {
     }
 
     @Override

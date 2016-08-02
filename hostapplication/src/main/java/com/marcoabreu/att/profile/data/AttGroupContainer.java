@@ -1,4 +1,4 @@
-package com.marcoabreu.att.profile;
+package com.marcoabreu.att.profile.data;
 
 import java.util.ArrayList;
 import java.util.List;

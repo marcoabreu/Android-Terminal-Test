@@ -63,4 +63,20 @@ public class IfStatement extends Composite {
     public void stop() {
         childToExecute = null;
     }
+
+    public Composite getSuccessComposite() {
+        return successComposite;
+    }
+
+    public void setSuccessComposite(Composite successComposite) {
+        this.successComposite = successComposite;
+    }
+
+    public Composite getFailComposite() {
+        return failComposite;
+    }
+
+    public void setFailComposite(Composite failComposite) {
+        this.failComposite = failComposite;
+    }
 }

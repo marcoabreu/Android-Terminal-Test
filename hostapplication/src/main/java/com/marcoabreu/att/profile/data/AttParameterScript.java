@@ -1,20 +1,15 @@
-package com.marcoabreu.att.profile;
+package com.marcoabreu.att.profile.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlSeeAlso;
 
 /**
  * Created by AbreuM on 29.07.2016.
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlSeeAlso({ AttParameterText.class, AttParameterActionDevice.class, AttParameterActionHost.class })
-public abstract class AttAction extends AttComposite {
+public abstract class AttParameterScript extends AttParameter implements DynamicScript {
     @XmlAttribute(name = "path")
     private String path;
 
@@ -27,7 +22,7 @@ public abstract class AttAction extends AttComposite {
     @XmlElementRef
     private List<AttParameter> parameters;
 
-    public AttAction() {
+    public AttParameterScript() {
         this.parameters = new ArrayList<>();
     }
 
@@ -43,6 +38,7 @@ public abstract class AttAction extends AttComposite {
         this.parameters.add(attParameter);
     }
 
+    @Override
     public String getPath() {
         return path;
     }
@@ -51,6 +47,7 @@ public abstract class AttAction extends AttComposite {
         this.path = path;
     }
 
+    @Override
     public String getMethod() {
         return method;
     }
@@ -59,6 +56,7 @@ public abstract class AttAction extends AttComposite {
         this.method = method;
     }
 
+    @Override
     public long getTimeoutMs() {
         return timeoutMs;
     }
@@ -67,6 +65,7 @@ public abstract class AttAction extends AttComposite {
         this.timeoutMs = timeoutMs;
     }
 
+    @Override
     public List<AttParameter> getParameters() {
         return parameters;
     }
