@@ -46,12 +46,15 @@ public class ActionCompiler {
             }
         }
 
-        //Init parameters
-        this.dynamicScript.getParameters().forEach(AttParameter::init);
-
         if(targetMethod == null) {
             throw new NoSuchElementException(String.format("Method %s not found in %s", dynamicScript.getMethod(), dynamicScript.getPath()));
         }
+
+        //TODO: Validate method signature
+
+        //Init parameters
+        this.dynamicScript.getParameters().forEach(AttParameter::init);
+
     }
 
     private String getSourceFileContent(DynamicScript dynamicScript) throws IOException {
