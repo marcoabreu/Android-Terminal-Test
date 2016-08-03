@@ -1,12 +1,12 @@
 package com.marcoabreu.att.profile.data;
 
-import com.marcoabreu.att.host.ActionCompiler;
+import com.marcoabreu.att.host.handler.HostActionCompiler;
+
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import bsh.EvalError;
 
 /**
  * Created by AbreuM on 29.07.2016.
@@ -14,21 +14,21 @@ import bsh.EvalError;
 @XmlRootElement(name = "ParameterScriptHost")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class AttParameterScriptHost extends AttParameterScript {
-    ActionCompiler compiler;
+    HostActionCompiler compiler;
 
     @Override
-    public Object getValue() {
+    public Serializable getValue() {
         try {
             return compiler.executeReturn();
-        } catch (EvalError evalError) {
-            throw new RuntimeException(evalError);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public void init() {
         try {
-            compiler = new ActionCompiler(this);
+            compiler = new HostActionCompiler(this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

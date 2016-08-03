@@ -1,5 +1,7 @@
 package com.marcoabreu.att.script;
 
+import android.content.Context;
+
 import com.marcoabreu.att.bridge.PairedHost;
 import com.marcoabreu.att.storage.DataStorageDeviceProxy;
 
@@ -11,6 +13,7 @@ import java.util.Map;
  */
 public class DeviceRuntimeContainer {
     private final DataStorageDeviceProxy dataStorage;
+    private Context appContext;
     private Map<String, Object> parameters = new HashMap<>();
 
     public DeviceRuntimeContainer(PairedHost host) {
@@ -27,5 +30,13 @@ public class DeviceRuntimeContainer {
 
     public DataStorageDeviceProxy getDataStorage() {
         return this.dataStorage;
+    }
+
+    public Context getAppContext() {
+        return appContext;
+    }
+
+    public void setAppContext(Context appContext) {
+        this.appContext = appContext;
     }
 }

@@ -9,8 +9,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Server for communication between devices and host
@@ -30,7 +30,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     public DeviceServer(DeviceManager deviceManager, int port) {
         this.deviceManager = deviceManager;
         this.port = port;
-        this.listeners = new HashSet<>();
+        this.listeners = ConcurrentHashMap.newKeySet();
     }
 
     public void start() throws IOException {

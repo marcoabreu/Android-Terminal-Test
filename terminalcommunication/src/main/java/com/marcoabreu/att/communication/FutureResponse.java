@@ -17,7 +17,7 @@ public class FutureResponse<T extends com.marcoabreu.att.communication.message.B
         bridgeEndpoint.registerMessageListener(new BridgeMessageListener() {
             @Override
             public void onMessage(PhysicalDevice device, com.marcoabreu.att.communication.message.BaseMessage message) {
-                if(message.getTransactionId() == messageToSend.getTransactionId()) {
+                if(message.getTransactionId().equals(messageToSend.getTransactionId())) {
                     setResponse(message);
 
                     //Unregister handler

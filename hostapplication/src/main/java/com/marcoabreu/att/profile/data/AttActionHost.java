@@ -2,13 +2,11 @@ package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.host.ActionCompiler;
+import com.marcoabreu.att.host.handler.HostActionCompiler;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import bsh.EvalError;
 
 /**
  * An Action to execute a script on the host computer
@@ -24,9 +22,9 @@ public class AttActionHost extends AttAction {
 
     @Override
     public Composite convertLogic() {
-        final ActionCompiler compiler;
+        final HostActionCompiler compiler;
         try {
-            compiler = new ActionCompiler(this);
+            compiler = new HostActionCompiler(this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -34,8 +32,8 @@ public class AttActionHost extends AttAction {
         return new Action(() -> {
             try {
                 compiler.executeVoid();
-            } catch (EvalError evalError) {
-                throw new RuntimeException(evalError);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
 
             return true;

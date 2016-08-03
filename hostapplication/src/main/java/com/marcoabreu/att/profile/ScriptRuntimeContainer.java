@@ -1,5 +1,6 @@
 package com.marcoabreu.att.profile;
 
+import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.storage.DataStorageHostProxy;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public class ScriptRuntimeContainer {
 
     }
 
-    public ScriptRuntimeContainer(String device) {
+    public ScriptRuntimeContainer(PhysicalDevice device) {
         dataStorage = new DataStorageHostProxy(device);
     }
 

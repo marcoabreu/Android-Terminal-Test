@@ -1,11 +1,13 @@
 package com.marcoabreu.att.storage;
 
+import com.marcoabreu.att.communication.PhysicalDevice;
+
 /**
  * Proxied view on the DataStorage for host
  * Created by AbreuM on 02.08.2016.
  */
 public class DataStorageHostProxy {
-    private String device;
+    private PhysicalDevice device;
 
     /**
      * No device specific view
@@ -18,7 +20,7 @@ public class DataStorageHostProxy {
      * Device specific view
      * @param device selected device
      */
-    public DataStorageHostProxy(String device) {
+    public DataStorageHostProxy(PhysicalDevice device) {
         this.device = device;
     }
 

@@ -1,5 +1,6 @@
 package com.marcoabreu.att.script;
 
+import com.marcoabreu.att.MainActivity;
 import com.marcoabreu.att.bridge.PairedHost;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class DeviceInterpreter {
     private Object execute(PairedHost host, Map<String, Serializable> parameters) throws EvalError {
         //Load runtime
         DeviceRuntimeContainer runtime = new DeviceRuntimeContainer(host);
+        runtime.setAppContext(MainActivity.getAppContext());
 
         //Load parameters
         runtime.getParameters().putAll(parameters);

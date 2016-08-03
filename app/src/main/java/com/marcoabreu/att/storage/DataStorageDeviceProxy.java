@@ -24,9 +24,9 @@ public class DataStorageDeviceProxy {
 
     public <T extends Serializable> T getData(String key) {
         DataStorageGetRequest request = new DataStorageGetRequest(key);
-        FutureResponse<DataStorageGetResponse> futureResponse = host.sendMessage(request);
 
         try {
+            FutureResponse<DataStorageGetResponse> futureResponse = host.sendMessage(request);
             return (T)futureResponse.get().getValue();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -35,9 +35,9 @@ public class DataStorageDeviceProxy {
 
     public <T extends Serializable> void saveData(String key, StorageScope scope, T data) throws DuplicateKeyException {
         DataStorageSaveRequest request = new DataStorageSaveRequest(key, scope, data);
-        FutureResponse<DataStorageSaveResponse> futureResponse = host.sendMessage(request);
 
         try {
+            FutureResponse<DataStorageSaveResponse> futureResponse = host.sendMessage(request);
             futureResponse.get();
         } catch (Exception e) {
             throw new RuntimeException(e);

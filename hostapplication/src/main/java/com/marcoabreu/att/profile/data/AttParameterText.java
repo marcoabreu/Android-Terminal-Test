@@ -1,5 +1,7 @@
 package com.marcoabreu.att.profile.data;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -25,7 +27,7 @@ public class AttParameterText extends AttParameter {
     }
 
     @Override
-    public Object getValue() {
+    public Serializable getValue() {
         return this.textValue;
     }
 

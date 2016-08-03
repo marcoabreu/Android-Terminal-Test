@@ -1,9 +1,11 @@
 package com.marcoabreu.att.device;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import se.vidstige.jadb.AdbServerLauncher;
 import se.vidstige.jadb.JadbConnection;
@@ -19,12 +21,29 @@ import se.vidstige.jadb.managers.PackageManager;
  */
 public class DeviceManager {
     private static final int SERVER_PORT = 12022;
+    private static DeviceManager instance;
     private DeviceServer deviceServer;
     private Set<PairedDevice> pairedDevices;
+    private Map<String, PairedDevice> assignedDevices;
+
+    public static DeviceManager getInstance() {
+        //TODO make it nice
+        if(instance == null) {
+            try {
+                instance = new DeviceManager();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return instance;
+    }
 
     public DeviceManager() throws IOException {
-        pairedDevices = new HashSet<>();
+        pairedDevices = ConcurrentHashMap.newKeySet();
+        assignedDevices = new HashMap<>();
         deviceServer = new DeviceServer(this, SERVER_PORT);
+
     }
 
     public void start() throws IOException, InterruptedException {
@@ -42,6 +61,27 @@ public class DeviceManager {
     public List<JadbDevice> getConnectedDevices() throws IOException, InterruptedException, JadbException {
         //new AdbServerLauncher().launch(); //TODO only request start if necessary - this is a hell of slow
         return createConnection().getDevices();
+    }
+
+    /**
+     * Gets a physical device by its synonym and asks the user to select a device in case it's not defined yet
+     * @param synonym synonym like "device1", "device2" etc
+     * @return
+     */
+    public PairedDevice getPairedDeviceBySynonym(String synonym) {
+        PairedDevice device = assignedDevices.get(synonym);
+
+        if(device == null) {
+            //Device not defined, ask the user
+            //TODO: Ask the user
+
+            assignedDevices.put(synonym, getPairedDevices().iterator().next());
+
+            return getPairedDeviceBySynonym(synonym); //Recursive in case user enters rubbish or closes the dialog. TODO: Reconsider this way
+        } else {
+            return device;
+        }
+
     }
 
     /**

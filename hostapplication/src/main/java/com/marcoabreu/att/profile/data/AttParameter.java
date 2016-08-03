@@ -1,5 +1,7 @@
 package com.marcoabreu.att.profile.data;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -16,7 +18,7 @@ public abstract class AttParameter {
     public AttParameter() {
     }
 
-    public abstract Object getValue();
+    public abstract Serializable getValue();
 
     public abstract void init();
 

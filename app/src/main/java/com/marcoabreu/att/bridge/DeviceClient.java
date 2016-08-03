@@ -16,8 +16,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Client to connect to host application
@@ -32,7 +32,7 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
 
     public DeviceClient(int port) {
         this.port = port;
-        this.listeners = new HashSet<>();
+        this.listeners = ConcurrentHashMap.newKeySet();
     }
 
     public void start() throws IOException {
@@ -120,7 +120,7 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 while(true) {
                     BaseMessage message = (BaseMessage) in.readObject();
                     Log.d(TAG, "Received message");
-                    deviceClient.invokeOnMessage(null, message); //TODO: reconsider whether we actually need access to PhysicalDevice
+                    deviceClient.invokeOnMessage(pairedHost, message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

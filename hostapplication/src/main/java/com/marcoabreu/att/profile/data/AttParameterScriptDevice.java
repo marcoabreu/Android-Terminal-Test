@@ -1,5 +1,7 @@
 package com.marcoabreu.att.profile.data;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -15,7 +17,7 @@ public class AttParameterScriptDevice extends AttParameterScript {
     private String targetDevice;
 
     @Override
-    public Object getValue() {
+    public Serializable getValue() {
         //Load file content
 
         //Send to device compiler
