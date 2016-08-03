@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.marcoabreu.att.bridge.DeviceClient;
 import com.marcoabreu.att.compiler.BeanCompiler;
 import com.marcoabreu.att.compiler.CompilerException;
 import com.marcoabreu.att.aaascripts.CallScript;
@@ -48,10 +49,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Thread socketServerThread = new Thread(new SocketServerThread());
-        socketServerThread.start();
+        //Thread socketServerThread = new Thread(new SocketServerThread());
+        //socketServerThread.start();
 
-
+        try {
+            new DeviceClient(12022).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void compilerTest() {

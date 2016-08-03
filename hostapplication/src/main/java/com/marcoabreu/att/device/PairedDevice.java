@@ -1,6 +1,6 @@
 package com.marcoabreu.att.device;
 
-import com.marcoabreu.att.communication.BaseMessage;
+import com.marcoabreu.att.communication.*;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,13 +11,14 @@ import java.io.ObjectOutputStream;
  * Instance of a device which has been paired successfully. Offers tools to communicate with the device
  * Created by AbreuM on 02.08.2016.
  */
-public class PairedDevice implements Closeable {
+public class PairedDevice extends PhysicalDevice implements Closeable {
     private final DeviceServer deviceServer;
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
     private Thread messageThread;
 
     public PairedDevice(DeviceServer deviceServer, ObjectInputStream in, ObjectOutputStream out)  {
+        super("TODO"); //TODO get the unique ID
         this.deviceServer = deviceServer;
         this.in = in;
         this.out = out;
@@ -28,17 +29,17 @@ public class PairedDevice implements Closeable {
      * @param message
      * @return
      */
-    public <T extends BaseMessage> FutureResponse<T> sendMessage(BaseMessage message) throws IOException {
+    public <T extends com.marcoabreu.att.communication.message.BaseMessage> com.marcoabreu.att.communication.FutureResponse<T> sendMessage(com.marcoabreu.att.communication.message.BaseMessage message) throws IOException {
         out.writeObject(message);
 
-        return new FutureResponse<>(message, deviceServer);
+        return new com.marcoabreu.att.communication.FutureResponse<>(message, deviceServer);
     }
 
     /**
      * Send a message without awaiting a response
      * @param message
      */
-    public void sendResponse(BaseMessage message) throws IOException {
+    public void sendResponse(com.marcoabreu.att.communication.message.BaseMessage message) throws IOException {
         out.writeObject(message);
     }
 
@@ -46,7 +47,7 @@ public class PairedDevice implements Closeable {
      * Blocking call to get the next message
      * @param <T>
      */
-    public <T extends BaseMessage> T readMessage() throws IOException {
+    public <T extends com.marcoabreu.att.communication.message.BaseMessage> T readMessage() throws IOException {
         try {
             return (T)in.readObject();
         }catch (ClassNotFoundException e) {

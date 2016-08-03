@@ -5,5 +5,6 @@ package com.marcoabreu.att.communication;
  */
 public enum Opcode {
     PAIR_REQUEST,
-    PAIR_RESPONSE
+    PAIR_RESPONSE,
+    TEST
 }

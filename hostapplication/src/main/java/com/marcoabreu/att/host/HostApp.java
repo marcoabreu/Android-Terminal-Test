@@ -1,15 +1,9 @@
 package com.marcoabreu.att.host;
 
-import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.profile.ProfileExecutor;
-import com.marcoabreu.att.profile.ProfileMarshaller;
-import com.marcoabreu.att.profile.data.AttActionHost;
-import com.marcoabreu.att.profile.data.AttParameterScriptHost;
-import com.marcoabreu.att.profile.data.AttParameterText;
-import com.marcoabreu.att.profile.data.AttProfile;
-import com.marcoabreu.att.profile.data.AttSleep;
+import com.marcoabreu.att.communication.message.TestMessage;
+import com.marcoabreu.att.device.DeviceManager;
 
-import javax.xml.bind.JAXBException;
+import java.util.NoSuchElementException;
 
 public class HostApp {
     /*
@@ -247,7 +241,7 @@ public class HostApp {
         pe.start();
     }*/
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         AttProfile profile = new AttProfile();
         profile.setDescription("Testdescription");
         profile.setIdentifier("TestId");
@@ -310,6 +304,28 @@ public class HostApp {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+    }*/
+
+    public static void main(String args[]) {
+        try {
+            DeviceManager deviceManager = new DeviceManager();
+            deviceManager.start();
+
+            deviceManager.getConnectedDevices().forEach(System.out::println);
+
+            deviceManager.startPairing(deviceManager.getConnectedDevices().get(0));
+
+            while(true) {
+                Thread.sleep(1000);
+                try {
+                    deviceManager.getPairedDevices().iterator().next().sendMessage(new TestMessage("Hello"));
+                } catch(NoSuchElementException ex) {
+
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

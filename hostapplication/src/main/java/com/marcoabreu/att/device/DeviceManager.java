@@ -25,6 +25,10 @@ public class DeviceManager {
     public DeviceManager() throws IOException {
         pairedDevices = new HashSet<>();
         deviceServer = new DeviceServer(this, SERVER_PORT);
+    }
+
+    public void start() throws IOException, InterruptedException {
+        new AdbServerLauncher().launch();
         deviceServer.start();
     }
 
@@ -36,7 +40,7 @@ public class DeviceManager {
      * @throws JadbException
      */
     public List<JadbDevice> getConnectedDevices() throws IOException, InterruptedException, JadbException {
-        new AdbServerLauncher().launch(); //TODO only request start if necessary - this is a hell of slow
+        //new AdbServerLauncher().launch(); //TODO only request start if necessary - this is a hell of slow
         return createConnection().getDevices();
     }
 
@@ -44,8 +48,8 @@ public class DeviceManager {
      * Get all physical devices which have been paired successfully
      * @return
      */
-    public List<PairedDevice> getPairedDevices() {
-        throw new RuntimeException();
+    public Set<PairedDevice> getPairedDevices() {
+        return this.pairedDevices;
     }
 
     public void addPairedDevice(PairedDevice device) {
@@ -57,8 +61,11 @@ public class DeviceManager {
      * @param device Device to pair
      */
     public void startPairing(JadbDevice device) throws IOException, JadbException {
-        Transport transport = createConnection().createTransport();
-        transport.send(String.format("host-serial:%s:forward:tcp:%d;tcp:%d", device.getSerial(), SERVER_PORT, SERVER_PORT));
+        //Transport transport = createConnection().createTransport();
+        Transport transport = device.getTransport();
+        //transport.send(String.format("host-serial:%s:forward:tcp:%d;tcp:%d", device.getSerial(), SERVER_PORT, SERVER_PORT));
+        //transport.send(String.format("host-serial:%s:forward:tcp:%d;tcp:%d", device.getSerial(), SERVER_PORT, SERVER_PORT));
+        transport.send(String.format("reverse:forward:tcp:%d;tcp:%d", SERVER_PORT, SERVER_PORT));
         transport.verifyResponse();
 
         //Launch app

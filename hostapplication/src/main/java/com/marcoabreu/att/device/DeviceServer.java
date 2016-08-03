@@ -1,9 +1,9 @@
 package com.marcoabreu.att.device;
 
-import com.marcoabreu.att.communication.BaseMessage;
-import com.marcoabreu.att.communication.PairRequestMessage;
-import com.marcoabreu.att.communication.PairResponseMessage;
+import com.marcoabreu.att.communication.BridgeEndpoint;
+import com.marcoabreu.att.communication.BridgeMessageListener;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,12 +16,12 @@ import java.util.Set;
  * Server for communication between devices and host
  * Created by AbreuM on 02.08.2016.
  */
-public class DeviceServer {
+public class DeviceServer implements Closeable, BridgeEndpoint {
     private final int port;
     private final DeviceManager deviceManager;
     private ServerSocket serverSocket;
     private Thread pairingThread;
-    private Set<DeviceMessageListener> listeners;
+    private Set<BridgeMessageListener> listeners;
 
     /**
      * Initialize a server to listen for connections on the specified port
@@ -36,27 +36,38 @@ public class DeviceServer {
     public void start() throws IOException {
         serverSocket = new ServerSocket(port);
         pairingThread = new Thread(new PairingListenerThread(serverSocket, this));
+        pairingThread.setDaemon(true);
         pairingThread.start();
 
+    }
+
+    @Override
+    public void close() throws IOException {
+        stop();
     }
 
     public void stop() {
         //TODO: Close listener thread and close connection to all devices
     }
 
-    public void registerMessageListener(DeviceMessageListener listener) {
+    @Override
+    public void registerMessageListener(BridgeMessageListener listener) {
         listeners.add(listener);
     }
 
-    public void removeMessageListener(DeviceMessageListener listener) {
+    @Override
+    public void removeMessageListener(BridgeMessageListener listener) {
         listeners.remove(listener);
     }
 
-    public void invokeOnMessage(PairedDevice device, BaseMessage message) {
-        for(DeviceMessageListener listener : listeners) {
+    public void invokeOnMessage(PairedDevice device, com.marcoabreu.att.communication.message.BaseMessage message) {
+        //TODO: Invoke in seperate tasks
+        for(BridgeMessageListener listener : listeners) {
             listener.onMessage(device, message);
         }
     }
+
+
 
     /**
      * Main thread to listen for incoming connections of newly connected devices
@@ -75,14 +86,16 @@ public class DeviceServer {
                 try {
                     Socket socket = serverSocket.accept(); //new device attempting to connect
 
-                    //TODO: Switch to communication via objects (ObjectStream)
-                    ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                    //out.flush() has to be done first to publish headers
                     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                    out.flush();
+                    ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-                    PairedDevice pairedDevice = new PairedDevice(in, out);
+                    PairedDevice pairedDevice = new PairedDevice(deviceServer, in, out);
 
                     //Start listener for incoming messages
                     Thread messageHandlerThread = new Thread(new DeviceMessageThread(pairedDevice, deviceServer));
+                    messageHandlerThread.setDaemon(true);
                     pairedDevice.setMessageThread(messageHandlerThread);
                     messageHandlerThread.start();
                 } catch (IOException e) {
@@ -107,13 +120,15 @@ public class DeviceServer {
         public void run() {
             try (PairedDevice device = pairedDevice) {
                 //Finish handshake
-                PairRequestMessage pairRequestMessage = device.readMessage();
-                device.sendMessage(new PairResponseMessage(pairRequestMessage));
+                com.marcoabreu.att.communication.message.PairRequestMessage pairRequestMessage = device.readMessage();
+                device.sendMessage(new com.marcoabreu.att.communication.message.PairResponseMessage(pairRequestMessage));
 
                 deviceManager.addPairedDevice(device);
 
+                //TODO: Notify a device has been paired
+
                 while (true) {
-                    BaseMessage message = device.readMessage();
+                    com.marcoabreu.att.communication.message.BaseMessage message = device.readMessage();
                     deviceServer.invokeOnMessage(device, message);
                 }
             } catch (IOException ex) {

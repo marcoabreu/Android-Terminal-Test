@@ -1,6 +1,4 @@
-package com.marcoabreu.att.device;
-
-import com.marcoabreu.att.communication.BaseMessage;
+package com.marcoabreu.att.communication;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -8,27 +6,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
+ * Object allowing access to the response of a message as soon as it arrives
  * Created by AbreuM on 02.08.2016.
  */
-public class FutureResponse<T extends BaseMessage> implements Future<T> {
+public class FutureResponse<T extends com.marcoabreu.att.communication.message.BaseMessage> implements Future<T> {
     private final Object lockObject = new Object();
-    private BaseMessage response = null;
+    private com.marcoabreu.att.communication.message.BaseMessage response = null;
 
-    public FutureResponse(BaseMessage sentMessage, DeviceServer deviceServer){
-        deviceServer.registerMessageListener(new DeviceMessageListener() {
+    public FutureResponse(com.marcoabreu.att.communication.message.BaseMessage sentMessage, BridgeEndpoint bridgeEndpoint){
+        bridgeEndpoint.registerMessageListener(new BridgeMessageListener() {
             @Override
-            public void onMessage(PairedDevice device, BaseMessage message) {
+            public void onMessage(PhysicalDevice device, com.marcoabreu.att.communication.message.BaseMessage message) {
                 if(message.getTransactionId() == sentMessage.getTransactionId()) {
                     setResponse(message);
 
                     //Unregister handler
-                    deviceServer.removeMessageListener(this);
+                    bridgeEndpoint.removeMessageListener(this);
                 }
             }
         });
     }
 
-    private void setResponse(BaseMessage response) {
+    private void setResponse(com.marcoabreu.att.communication.message.BaseMessage response) {
         synchronized (lockObject) {
             this.response = response;
             lockObject.notifyAll();

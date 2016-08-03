@@ -1,11 +1,14 @@
-package com.marcoabreu.att.communication;
+package com.marcoabreu.att.communication.message;
 
+import com.marcoabreu.att.communication.Opcode;
+
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by AbreuM on 02.08.2016.
  */
-public abstract class BaseMessage {
+public abstract class BaseMessage implements Serializable {
     private final UUID transactionId;
     private final Opcode opcode;
 
