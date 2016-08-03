@@ -2,8 +2,8 @@ package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.communication.message.TestMessage;
 import com.marcoabreu.att.device.DeviceManager;
-
-import java.util.NoSuchElementException;
+import com.marcoabreu.att.host.handler.DataStorageGetHandler;
+import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
 
 public class HostApp {
     /*
@@ -310,6 +310,11 @@ public class HostApp {
     public static void main(String args[]) {
         try {
             DeviceManager deviceManager = new DeviceManager();
+
+            //register listeners
+            deviceManager.getDeviceServer().registerMessageListener(new DataStorageGetHandler());
+            deviceManager.getDeviceServer().registerMessageListener(new DataStorageSaveHandler());
+
             deviceManager.start();
 
             deviceManager.getConnectedDevices().forEach(System.out::println);
@@ -320,7 +325,7 @@ public class HostApp {
                 Thread.sleep(1000);
                 try {
                     deviceManager.getPairedDevices().iterator().next().sendMessage(new TestMessage("Hello"));
-                } catch(NoSuchElementException ex) {
+                } catch(Exception ex) {
 
                 }
             }

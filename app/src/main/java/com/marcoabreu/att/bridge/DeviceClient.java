@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.marcoabreu.att.communication.BridgeEndpoint;
 import com.marcoabreu.att.communication.BridgeMessageListener;
+import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.BaseMessage;
 import com.marcoabreu.att.communication.message.PairRequestMessage;
 import com.marcoabreu.att.communication.message.PairResponseMessage;
@@ -15,6 +16,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Client to connect to host application
@@ -25,9 +28,11 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
     private final int port;
     private Socket socket;
     private Thread bridgeThread;
+    private Set<BridgeMessageListener> listeners;
 
     public DeviceClient(int port) {
         this.port = port;
+        this.listeners = new HashSet<>();
     }
 
     public void start() throws IOException {
@@ -48,12 +53,23 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
 
     @Override
     public void registerMessageListener(BridgeMessageListener listener) {
-        //TODO
+        listeners.add(listener);
     }
 
     @Override
     public void removeMessageListener(BridgeMessageListener listener) {
-        //TODO
+        listeners.remove(listener);
+    }
+
+    public void invokeOnMessage(PhysicalDevice device, BaseMessage message) {
+        //TODO: Invoke in separate tasks
+        for(BridgeMessageListener listener : listeners) {
+            try {
+                listener.onMessage(device, message);
+            } catch (IOException e) {
+                e.printStackTrace(); //TODO
+            }
+        }
     }
 
     private class BridgeThread implements Runnable {
@@ -104,7 +120,7 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 while(true) {
                     BaseMessage message = (BaseMessage) in.readObject();
                     Log.d(TAG, "Received message");
-                    //TODO: Invoke message handler
+                    deviceClient.invokeOnMessage(null, message); //TODO: reconsider whether we actually need access to PhysicalDevice
                 }
             } catch (IOException e) {
                 e.printStackTrace();

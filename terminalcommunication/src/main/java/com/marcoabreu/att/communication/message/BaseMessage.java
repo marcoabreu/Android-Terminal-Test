@@ -11,6 +11,7 @@ import java.util.UUID;
 public abstract class BaseMessage implements Serializable {
     private final UUID transactionId;
     private final Opcode opcode;
+    private Exception occuredException = null;
 
     /**
      * Generate a new message
@@ -27,6 +28,24 @@ public abstract class BaseMessage implements Serializable {
     public BaseMessage(Opcode opcode, BaseMessage previousMessage) {
         this.opcode = opcode;
         this.transactionId = previousMessage.transactionId;
+    }
+
+    /**
+     * Always call this method to validate a response
+     * @throws Exception Exception thrown by the other party while serving the response
+     */
+    public void checkValidity() throws Exception {
+        if(occuredException != null) {
+            throw occuredException;
+        }
+    }
+
+    public Exception getOccuredException() {
+        return occuredException;
+    }
+
+    public void setOccuredException(Exception occuredException) {
+        this.occuredException = occuredException;
     }
 
     public UUID getTransactionId() {

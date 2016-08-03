@@ -61,9 +61,13 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     }
 
     public void invokeOnMessage(PairedDevice device, com.marcoabreu.att.communication.message.BaseMessage message) {
-        //TODO: Invoke in seperate tasks
+        //TODO: Invoke in separate tasks
         for(BridgeMessageListener listener : listeners) {
-            listener.onMessage(device, message);
+            try {
+                listener.onMessage(device, message);
+            } catch (IOException e) {
+                e.printStackTrace(); //TODO
+            }
         }
     }
 

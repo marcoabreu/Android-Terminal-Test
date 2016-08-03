@@ -1,6 +1,6 @@
 package com.marcoabreu.att.profile;
 
-import com.marcoabreu.att.storage.DataStorageProxy;
+import com.marcoabreu.att.storage.DataStorageHostProxy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,16 +10,16 @@ import java.util.Map;
  * Created by AbreuM on 02.08.2016.
  */
 public class ScriptRuntimeContainer {
-    private final DataStorageProxy dataStorage;
+    private final DataStorageHostProxy dataStorage;
     private Map<String, Object> parameters = new HashMap<>();
 
     public ScriptRuntimeContainer() {
-        dataStorage = new DataStorageProxy();
+        dataStorage = new DataStorageHostProxy();
 
     }
 
     public ScriptRuntimeContainer(String device) {
-        dataStorage = new DataStorageProxy(device);
+        dataStorage = new DataStorageHostProxy(device);
     }
 
     public void addParameter(String key, Object data) {
@@ -30,7 +30,7 @@ public class ScriptRuntimeContainer {
         return this.parameters;
     }
 
-    public DataStorageProxy getDataStorage() {
+    public DataStorageHostProxy getDataStorage() {
         return dataStorage;
     }
 }

@@ -78,4 +78,8 @@ public class DeviceManager {
     private JadbConnection createConnection() throws IOException {
         return new JadbConnection();
     }
+
+    public DeviceServer getDeviceServer() {
+        return deviceServer;
+    }
 }

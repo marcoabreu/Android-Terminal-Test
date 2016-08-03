@@ -3,58 +3,32 @@ package com.marcoabreu.att.host;
 import com.marcoabreu.att.profile.ScriptRuntimeContainer;
 import com.marcoabreu.att.profile.data.AttParameter;
 import com.marcoabreu.att.profile.data.DynamicScript;
+import com.marcoabreu.att.script.DynamicInterpreter;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
 
 import bsh.BshMethod;
 import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * Helper to compile and execute an action
+ * Helper to compile and execute an action on the host machine
  * Created by AbreuM on 01.08.2016.
  */
 public class ActionCompiler {
+    private final DynamicInterpreter dynamicInterpreter;
     private final DynamicScript dynamicScript;
     private Interpreter interpreter;
     private BshMethod targetMethod;
 
     public ActionCompiler(DynamicScript dynamicScript) throws EvalError, IOException {
         this.dynamicScript = dynamicScript;
-        this.interpreter = new Interpreter();
-        this.interpreter.setStrictJava(true);
-
-        //Basically extract the newly added methods
-        List<BshMethod> oldMethods = Arrays.asList(interpreter.getNameSpace().getMethods());
-        interpreter.eval(getSourceFileContent(dynamicScript)); //Load Action
-        Set<BshMethod> newMethodsSet = new HashSet<>(Arrays.asList(interpreter.getNameSpace().getMethods()));
-        newMethodsSet.removeAll(oldMethods);
-
-        //Search for the method we're looking for - we simply set the constraint that method names must be unique within a script and dont bother about parameters
-        targetMethod = null;
-        for(BshMethod method : newMethodsSet) {
-            if(method.getName().equals(dynamicScript.getMethod())) {
-                targetMethod = method;
-                break;
-            }
-        }
-
-        if(targetMethod == null) {
-            throw new NoSuchElementException(String.format("Method %s not found in %s", dynamicScript.getMethod(), dynamicScript.getPath()));
-        }
-
-        //TODO: Validate method signature
+        this.dynamicInterpreter = new DynamicInterpreter(dynamicScript.getMethod(), getSourceFileContent(dynamicScript), dynamicScript.getPath());
 
         //Init parameters
         this.dynamicScript.getParameters().forEach(AttParameter::init);
-
     }
 
     private String getSourceFileContent(DynamicScript dynamicScript) throws IOException {
@@ -73,7 +47,7 @@ public class ActionCompiler {
             runtime.addParameter(param.getKey(), param.getValue());
         }
 
-        return targetMethod.invoke(new Object[] { runtime }, interpreter);
+        return dynamicInterpreter.execute(runtime);
     }
 
     public <T> T executeReturn() throws EvalError {

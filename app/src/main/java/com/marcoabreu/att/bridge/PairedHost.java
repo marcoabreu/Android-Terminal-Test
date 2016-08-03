@@ -1,20 +1,15 @@
 package com.marcoabreu.att.bridge;
 
+import com.marcoabreu.att.communication.PhysicalDevice;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
  * Created by AbreuM on 03.08.2016.
  */
-public class PairedHost {
-    private final DeviceClient deviceClient;
-    private final ObjectInputStream in;
-    private final ObjectOutputStream out;
-    private Thread messageThread;
-
+public class PairedHost extends PhysicalDevice {
     public PairedHost(DeviceClient deviceClient, ObjectInputStream in, ObjectOutputStream out)  {
-        this.deviceClient = deviceClient;
-        this.in = in;
-        this.out = out;
+        super("TODO", deviceClient, in, out); //TODO whatever we want to do here with the id
     }
 }

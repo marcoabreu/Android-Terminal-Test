@@ -1,5 +1,7 @@
 package com.marcoabreu.att.storage;
 
+import com.marcoabreu.att.communication.PhysicalDevice;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,8 +24,8 @@ public class DataStorage {
     }
 
     private Map<String, Object> applicationData;
-    private Map<String, Map<String, Object>> deviceData;
-    private Map<String, Map<String, Object>> deviceProfileData;
+    private Map<PhysicalDevice, Map<String, Object>> deviceData;
+    private Map<PhysicalDevice, Map<String, Object>> deviceProfileData;
     private Map<String, Object> profileData;
 
     public void purgeApplicationData() {
@@ -44,7 +46,7 @@ public class DataStorage {
         return getData(key, null);
     }
 
-    public <T> T getData(String key, String device) {
+    public <T> T getData(String key, PhysicalDevice device) {
         Object data = null;
 
         if(data == null) {
@@ -68,7 +70,7 @@ public class DataStorage {
         return (T)data;
     }
 
-    public <T> void saveData(String key, String device, StorageScope scope, T data) throws DuplicateKeyException {
+    public <T> void saveData(String key, PhysicalDevice device, StorageScope scope, T data) throws DuplicateKeyException {
         //Ensure device is set if device-specific scope is selected
         if(device == null && (scope == StorageScope.DEVICE_PROFILE || scope == StorageScope.DEVICE )) {
             throw new IllegalArgumentException("device must be set for scope " + scope.toString());

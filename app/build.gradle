@@ -33,5 +33,5 @@ dependencies {
     compile project(':terminalcommunication')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'org.beanshell:bsh:2.0b5'
+    compile 'org.apache-extras.beanshell:bsh:2.0b6'
 }
