@@ -2,7 +2,7 @@ package com.marcoabreu.att.script;
 
 import android.content.Context;
 
-import com.marcoabreu.att.bridge.PairedHost;
+import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.storage.DataStorageDeviceProxy;
 
 import java.util.HashMap;
@@ -12,11 +12,12 @@ import java.util.Map;
  * Created by AbreuM on 03.08.2016.
  */
 public class DeviceRuntimeContainer {
+    //TODO: Remove huge android-22.jar from libs
     private final DataStorageDeviceProxy dataStorage;
     private Context appContext;
     private Map<String, Object> parameters = new HashMap<>();
 
-    public DeviceRuntimeContainer(PairedHost host) {
+    public DeviceRuntimeContainer(PhysicalDevice host) {
         this.dataStorage = new DataStorageDeviceProxy(host);
     }
 

@@ -1,7 +1,7 @@
 package com.marcoabreu.att.storage;
 
-import com.marcoabreu.att.bridge.PairedHost;
 import com.marcoabreu.att.communication.FutureResponse;
+import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.DataStorageGetRequest;
 import com.marcoabreu.att.communication.message.DataStorageGetResponse;
 import com.marcoabreu.att.communication.message.DataStorageSaveRequest;
@@ -15,9 +15,9 @@ import java.io.Serializable;
  */
 public class DataStorageDeviceProxy {
     //We request the data from the host over the network and keep it all at one place instead of mirroring it the whole time
-    private final PairedHost host;
+    private final PhysicalDevice host;
 
-    public DataStorageDeviceProxy(PairedHost host) {
+    public DataStorageDeviceProxy(PhysicalDevice host) {
         this.host = host;
     }
 
