@@ -7,7 +7,6 @@ import com.marcoabreu.att.communication.BridgeMessageListener;
 import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.BaseMessage;
 import com.marcoabreu.att.communication.message.PairRequestMessage;
-import com.marcoabreu.att.communication.message.PairResponseMessage;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -110,11 +109,6 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 Log.d(TAG, "Attempting to pair");
                 out.writeObject(new PairRequestMessage(identifyingString));
 
-                //Read pairing response
-                PairResponseMessage pairResponseMessage = (PairResponseMessage) in.readObject();
-                Log.d(TAG, "Pairing successful");
-
-                //TODO: Fire connected event (show we've successfully connected)
 
                 //Read messages in loop
                 while(true) {

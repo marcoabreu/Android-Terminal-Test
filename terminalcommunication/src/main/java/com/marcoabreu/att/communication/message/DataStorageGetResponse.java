@@ -13,7 +13,7 @@ public class DataStorageGetResponse extends BaseMessage {
     private Object value;
 
     public <T extends Serializable> DataStorageGetResponse(DataStorageGetRequest request) {
-        super(Opcode.STORAGE_DATA_GET_REQUEST, request);
+        super(Opcode.STORAGE_DATA_GET_RESPONSE, request);
     }
 
     public String getKey() {

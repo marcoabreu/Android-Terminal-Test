@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.marcoabreu.att.bridge.DeviceClient;
+import com.marcoabreu.att.bridge.handler.PairResponseHandler;
 import com.marcoabreu.att.bridge.handler.ScriptExecutionHandler;
 import com.marcoabreu.att.communication.BridgeMessageListener;
 import com.marcoabreu.att.communication.PhysicalDevice;
@@ -52,10 +53,10 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             deviceClient = new DeviceClient(12022);
-            deviceClient.start();
 
             //Handler for dynamic script execution
             deviceClient.registerMessageListener(new ScriptExecutionHandler());
+            deviceClient.registerMessageListener(new PairResponseHandler());
 
             deviceClient.registerMessageListener(new BridgeMessageListener() {
                 @Override
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+
+            deviceClient.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,20 @@
 package com.marcoabreu.att.host;
 
+import com.marcoabreu.att.device.DeviceManager;
+import com.marcoabreu.att.engine.RunStatus;
+import com.marcoabreu.att.host.handler.PairRequestHandler;
+import com.marcoabreu.att.host.handler.DataStorageGetHandler;
+import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
+import com.marcoabreu.att.profile.ProfileExecutor;
+import com.marcoabreu.att.profile.ProfileMarshaller;
+import com.marcoabreu.att.profile.data.AttActionDevice;
+import com.marcoabreu.att.profile.data.AttActionHost;
+import com.marcoabreu.att.profile.data.AttParameterText;
+import com.marcoabreu.att.profile.data.AttProfile;
+import com.marcoabreu.att.profile.data.AttSleep;
+
+import javax.xml.bind.JAXBException;
+
 public class HostApp {
     /*
     public static void main(String args[]) {
@@ -302,13 +317,15 @@ public class HostApp {
         }
     }*/
 
-    /*public static void main(String args[]) {
+    public static void main(String args[]) {
         try {
             DeviceManager deviceManager = DeviceManager.getInstance();
 
             //register listeners
             deviceManager.getDeviceServer().registerMessageListener(new DataStorageGetHandler());
             deviceManager.getDeviceServer().registerMessageListener(new DataStorageSaveHandler());
+            deviceManager.getDeviceServer().registerMessageListener(new PairRequestHandler());
+
 
             deviceManager.start();
 
@@ -358,6 +375,8 @@ public class HostApp {
                 System.out.println("Waiting for connection");
             }
 
+            Thread.sleep(5000);
+
             ProfileExecutor pe = new ProfileExecutor(profile);
 
             pe.start();
@@ -377,6 +396,15 @@ public class HostApp {
             }
         } catch(Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /*public static void main(String args[]) {
+        RuntimeDexCompiler compiler = new RuntimeDexCompiler("C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device");
+        try {
+            compiler.convert();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }*/
 }

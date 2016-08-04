@@ -123,14 +123,6 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
         @Override
         public void run() {
             try (PairedDevice device = pairedDevice) {
-                //Finish handshake
-                com.marcoabreu.att.communication.message.PairRequestMessage pairRequestMessage = device.readMessage();
-                device.sendMessage(new com.marcoabreu.att.communication.message.PairResponseMessage(pairRequestMessage));
-
-                deviceManager.addPairedDevice(device);
-
-                //TODO: Notify a device has been paired
-
                 while (true) {
                     com.marcoabreu.att.communication.message.BaseMessage message = device.readMessage();
                     deviceServer.invokeOnMessage(device, message);

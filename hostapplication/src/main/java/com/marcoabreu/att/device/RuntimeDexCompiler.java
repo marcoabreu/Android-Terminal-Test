@@ -1,21 +1,32 @@
 package com.marcoabreu.att.device;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class to turn java source code into a dex file ready to be loaded by the device on runtime
  * Created by AbreuM on 04.08.2016.
  */
+//TODO: Add error handling, Runtime.exec does not return any messages
 public class RuntimeDexCompiler {
+    //Inspired by http://stackoverflow.com/questions/29348327/creating-a-dex-file-from-java-source-code
     private static final String SOURCE_FILENAME = "sources.txt";
+    private static final String BUILD_DIRNAME = "build";
+    private static final String DEX_FILENAME = "classes.dex";
+
     private static final String[] DEPENDENCIES = new String[] {
-            //Android library
-            //Shared library
+            "ANDROID_HOME/platforms/android-22/android.jar", // Android library
+            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar" //TODO: replace Shared communication library
     };
 
     private final String sourceDirectory;
@@ -34,39 +45,88 @@ public class RuntimeDexCompiler {
         return tempDir;
     }
 
-    public void work() {
-        try {
-            compileToClass();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    /**
+     * Convert the input directory to a dex file and return the mapping from local filepaths to resulting classpaths
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public Pair<File, Map<String, String>> convert() throws IOException, InterruptedException {
+        Map<String, String> mapping = compileToClass();
+        File dexFile = convertToDex();
+        return Pair.of(dexFile, mapping);
     }
 
     /**
      * Compile java source code into class-file
      */
-    private void compileToClass() throws IOException {
+    private Map<String, String> compileToClass() throws IOException, InterruptedException {
         //Find all java files and write to sources.txt
-        try(PrintWriter writer = new PrintWriter(new FileWriter(new File(getTemporaryDirectory(), SOURCE_FILENAME)))) {
+        Map<String, String> classpathMapping = new HashMap<>();
+        File sourceListFile = new File(getTemporaryDirectory(), SOURCE_FILENAME);
+        try(PrintWriter writer = new PrintWriter(new FileWriter(sourceListFile))) {
             for(File sourceFile : FileUtils.listFiles(new File(this.sourceDirectory), new String[] { "java" }, true)      ) {
+
+                try(BufferedReader reader = new BufferedReader(new FileReader(sourceFile))) {
+                    //Map the local file paths to the resulting classpath
+                    try {
+                        String curLine = "";
+                        for(curLine = reader.readLine(); !curLine.startsWith("package "); curLine = reader.readLine()) {
+                        }
+
+                        String packageName = curLine.replace("package ", "");
+                        packageName = packageName.replace(";", "");
+
+                        String className = FilenameUtils.removeExtension(sourceFile.getName());
+
+                        classpathMapping.put(sourceFile.getAbsolutePath(), packageName + "." + className);
+                    } catch(IOException ex) {
+                        throw new RuntimeException("File %s has no package defined");
+                    }
+
+                }
+
+
                 writer.println(sourceFile.getAbsolutePath());
             }
         }
 
 
+        File buildDir = new File(getTemporaryDirectory(), BUILD_DIRNAME);
+        buildDir.mkdir();
+
+        //TODO remove local paths
+        //This requires JDK7 because of android-22
+        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @SOURCELISTFILE";
+        buildString = buildString.replace("DEPENDENCIES", String.join(";", DEPENDENCIES));
+        buildString = buildString.replace("BUILDDIR", buildDir.getAbsolutePath());
+        buildString = buildString.replace("SOURCELISTFILE", SOURCE_FILENAME);
+
+        Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
+
+        return classpathMapping;
     }
 
     /**
      * Compile class-file into jar
      */
-    private void compileToJar() {
+    private void compileToJar() throws IOException {
 
     }
 
     /**
-     * Convert Jar into android-specific dex-file
+     * Convert class-file into android-specific dex-file
      */
-    private void convertToDex() {
+    private File convertToDex() throws IOException, InterruptedException {
+        //TODO: use ANDROID_HOME
+        String buildString = "C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\build-tools\\24.0.0\\dx.bat --dex --output DEXFILE BUILDDIR";
+        buildString = buildString.replace("DEXFILE", DEX_FILENAME);
+        buildString = buildString.replace("BUILDDIR", BUILD_DIRNAME);
 
+        Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
+
+        File dexFile = new File(getTemporaryDirectory(), DEX_FILENAME);
+
+        return dexFile;
     }
 }

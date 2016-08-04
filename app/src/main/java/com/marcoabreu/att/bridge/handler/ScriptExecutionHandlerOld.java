@@ -8,7 +8,7 @@ import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.BaseMessage;
 import com.marcoabreu.att.communication.message.ExecuteActionMessage;
 import com.marcoabreu.att.communication.message.ExecuteActionResponse;
-import com.marcoabreu.att.script.DexInterpreter;
+import com.marcoabreu.att.script.DeviceInterpreter;
 
 import java.io.IOException;
 
@@ -16,8 +16,9 @@ import java.io.IOException;
  * Handle requests to execute a dynamic script
  * Created by AbreuM on 03.08.2016.
  */
-public class ScriptExecutionHandler implements BridgeMessageListener {
-    private static String TAG = ScriptExecutionHandler.class.toString();
+@Deprecated
+public class ScriptExecutionHandlerOld implements BridgeMessageListener {
+    private static String TAG = ScriptExecutionHandlerOld.class.toString();
     @Override
     public void onMessage(PhysicalDevice device, BaseMessage message) throws IOException {
         if(message instanceof ExecuteActionMessage) {
@@ -28,7 +29,7 @@ public class ScriptExecutionHandler implements BridgeMessageListener {
             ExecuteActionResponse response = new ExecuteActionResponse(actionMessage);
 
             try {
-                DexInterpreter interpreter = new DexInterpreter(actionMessage.getMethodName(), actionMessage.getPath());
+                DeviceInterpreter interpreter = new DeviceInterpreter(actionMessage.getMethodName(), actionMessage.getClassName(), actionMessage.getScriptContent(), actionMessage.getPath());
                 Log.d(TAG, "Executing action");
                 if(actionMessage.isReadReturnValue()) {
                     response.setReturnValue(interpreter.executeReturn(host, actionMessage.getParameters()));
