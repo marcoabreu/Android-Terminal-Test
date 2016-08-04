@@ -1,6 +1,6 @@
 package com.marcoabreu.att.profile.data;
 
-import com.marcoabreu.att.host.handler.HostActionCompiler;
+import com.marcoabreu.att.host.HostActionCompiler;
 
 import java.io.Serializable;
 

@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
  * Created by AbreuM on 01.08.2016.
  */
 public class Calls {
-    enum CallState{
+    /*enum CallState{
         CALL_STATE_IDLE(TelephonyManager.CALL_STATE_IDLE),
         CALL_STATE_RINGING(TelephonyManager.CALL_STATE_RINGING),
         CALL_STATE_OFFHOOK(TelephonyManager.CALL_STATE_OFFHOOK);
@@ -41,7 +41,7 @@ public class Calls {
 
             throw new NoSuchElementException("Undefined " + value);
         }
-    }
+    }*/
 
 
     /**
@@ -65,15 +65,13 @@ public class Calls {
         //WaitHelper.waitWhile(() -> getCallState(runtime.getAppContext()) == CallState.CALL_STATE_IDLE);
     }
 
-    private static CallState getCallState(Context appContext) {
+    /*private static int getCallState(Context appContext) {
         TelephonyManager tm = (TelephonyManager) appContext.getSystemService(android.content.Context.TELEPHONY_SERVICE);
 
         int callStateRaw = tm.getCallState();
+        return callStateRaw;
+        //CallState callState = CallState.fromInteger(callStateRaw);
 
-        CallState callState = CallState.fromInteger(callStateRaw);
-
-        return callState;
-    }
-
-
+        //return callState;
+    }*/
 }

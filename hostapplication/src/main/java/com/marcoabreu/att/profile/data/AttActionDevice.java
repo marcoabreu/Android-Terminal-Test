@@ -4,7 +4,7 @@ import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.host.handler.DeviceActionCompiler;
+import com.marcoabreu.att.host.DeviceActionCompiler;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

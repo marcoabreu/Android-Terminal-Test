@@ -6,6 +6,7 @@ import com.marcoabreu.att.profile.data.DynamicScript;
 import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 
 import bsh.EvalError;
@@ -37,13 +38,13 @@ public abstract class ActionCompiler {
         return FileUtils.readFileToString(FileUtils.getFile(baseDirectory, dynamicScript.getPath() + ".java"));
     }
 
-    protected abstract Object execute() throws EvalError, ExecutionException, InterruptedException, IOException;
+    protected abstract Object execute() throws EvalError, ExecutionException, InterruptedException, IOException, InvocationTargetException, IllegalAccessException;
 
-    public <T> T executeReturn() throws EvalError, InterruptedException, ExecutionException, IOException {
+    public <T> T executeReturn() throws EvalError, InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
         return (T)execute();
     }
 
-    public void executeVoid() throws EvalError, InterruptedException, ExecutionException, IOException {
+    public void executeVoid() throws EvalError, InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
         execute();
     }
 }

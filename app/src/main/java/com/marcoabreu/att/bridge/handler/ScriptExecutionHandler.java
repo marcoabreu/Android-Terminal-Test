@@ -28,7 +28,7 @@ public class ScriptExecutionHandler implements BridgeMessageListener {
             ExecuteActionResponse response = new ExecuteActionResponse(actionMessage);
 
             try {
-                DeviceInterpreter interpreter = new DeviceInterpreter(actionMessage.getMethodName(), actionMessage.getScriptContent(), actionMessage.getPath());
+                DeviceInterpreter interpreter = new DeviceInterpreter(actionMessage.getMethodName(), actionMessage.getClassName(), actionMessage.getScriptContent(), actionMessage.getPath());
                 Log.d(TAG, "Executing action");
                 if(actionMessage.isReadReturnValue()) {
                     response.setReturnValue(interpreter.executeReturn(host, actionMessage.getParameters()));

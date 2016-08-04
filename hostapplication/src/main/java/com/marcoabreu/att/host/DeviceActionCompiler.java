@@ -1,13 +1,13 @@
-package com.marcoabreu.att.host.handler;
+package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.communication.FutureResponse;
 import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.ExecuteActionMessage;
 import com.marcoabreu.att.communication.message.ExecuteActionResponse;
-import com.marcoabreu.att.host.ActionCompiler;
 import com.marcoabreu.att.profile.data.AttParameter;
 import com.marcoabreu.att.profile.data.DynamicScript;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -23,6 +23,7 @@ import bsh.EvalError;
 public class DeviceActionCompiler extends ActionCompiler {
     private final PhysicalDevice device;
     private final String methodName;
+    private final String className;
     private final String scriptContent;
     private final String scriptPath;
 
@@ -30,6 +31,7 @@ public class DeviceActionCompiler extends ActionCompiler {
         super(dynamicScript);
         this.device = device;
         this.methodName = dynamicScript.getMethod();
+        this.className = new File(dynamicScript.getPath()).getName();
         this.scriptContent = getSourceFileContent(dynamicScript, false);
         this.scriptPath = dynamicScript.getPath();
     }
@@ -44,7 +46,7 @@ public class DeviceActionCompiler extends ActionCompiler {
         }
 
         //String methodName, String scriptContent, String path, boolean readReturnValue, Map<String, Serializable> parameters
-        ExecuteActionMessage request = new ExecuteActionMessage(this.methodName, this.scriptContent, this.scriptPath, true, parameters);
+        ExecuteActionMessage request = new ExecuteActionMessage(this.methodName, this.className, this.scriptContent, this.scriptPath, true, parameters);
         FutureResponse<ExecuteActionResponse> response = this.device.sendMessage(request);
         return response.get().getReturnValue();
     }

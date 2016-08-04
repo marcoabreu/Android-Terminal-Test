@@ -11,13 +11,15 @@ import java.util.Map;
  */
 public class ExecuteActionMessage extends BaseMessage {
     private String methodName;
+    private String className;
     private String scriptContent;
     private String path;
     private Map<String, Serializable> parameters;
     private boolean readReturnValue;
-    public ExecuteActionMessage(String methodName, String scriptContent, String path, boolean readReturnValue, Map<String, Serializable> parameters) {
+    public ExecuteActionMessage(String methodName, String className, String scriptContent, String path, boolean readReturnValue, Map<String, Serializable> parameters) {
         super(Opcode.EXECUTE_ACTION_REQUEST);
         this.methodName = methodName;
+        this.className = className;
         this.scriptContent = scriptContent;
         this.path = path;
         this.readReturnValue = readReturnValue;
@@ -30,6 +32,14 @@ public class ExecuteActionMessage extends BaseMessage {
 
     public void setMethodName(String methodName) {
         this.methodName = methodName;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getScriptContent() {

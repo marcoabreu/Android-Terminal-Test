@@ -2,7 +2,7 @@ package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.host.handler.HostActionCompiler;
+import com.marcoabreu.att.host.HostActionCompiler;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

@@ -1,18 +1,5 @@
 package com.marcoabreu.att.host;
 
-import com.marcoabreu.att.device.DeviceManager;
-import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.host.handler.DataStorageGetHandler;
-import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
-import com.marcoabreu.att.profile.ProfileExecutor;
-import com.marcoabreu.att.profile.ProfileMarshaller;
-import com.marcoabreu.att.profile.data.AttActionDevice;
-import com.marcoabreu.att.profile.data.AttParameterText;
-import com.marcoabreu.att.profile.data.AttProfile;
-import com.marcoabreu.att.profile.data.AttSleep;
-
-import javax.xml.bind.JAXBException;
-
 public class HostApp {
     /*
     public static void main(String args[]) {
@@ -315,7 +302,7 @@ public class HostApp {
         }
     }*/
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         try {
             DeviceManager deviceManager = DeviceManager.getInstance();
 
@@ -329,28 +316,32 @@ public class HostApp {
 
             deviceManager.startPairing(deviceManager.getConnectedDevices().get(0));
 
-            /*while(true) {
-                Thread.sleep(1000);
-                try {
-                    deviceManager.getPairedDevices().iterator().next().sendMessage(new TestMessage("Hello"));
-                } catch(Exception ex) {
-
-                }
-            }*/
-
 
             AttProfile profile = new AttProfile();
             profile.setDescription("Testdescription");
             profile.setIdentifier("TestId");
             profile.setName("Testname");
 
-            AttActionDevice action1 = new AttActionDevice();
-            action1.setName("Call Number");
-            action1.setMethod("startCall");
-            action1.setPath("Phone/Calls");
+            AttActionHost action1 = new AttActionHost();
+            action1.setName("Set up Koppelfeld");
+            action1.setMethod("setSignals");
+            action1.setPath("Peripherals/Koppelfeld");
             action1.setTimeoutMs(60000);
-            action1.addParameter(new AttParameterText("phoneNumber", "1234567"));
+            action1.addParameter(new AttParameterText("3G_1", "20"));
+            action1.addParameter(new AttParameterText("3G_2", "20"));
+            action1.addParameter(new AttParameterText("3G_3", "20"));
+            action1.addParameter(new AttParameterText("3G_4", "40"));
+            action1.addParameter(new AttParameterText("2G_1", "0"));
+            action1.addParameter(new AttParameterText("noise1", "93"));
             profile.addChild(action1);
+
+            AttActionDevice action2 = new AttActionDevice();
+            action2.setName("Call Number");
+            action2.setMethod("startCall");
+            action2.setPath("Phone/Calls");
+            action2.setTimeoutMs(60000);
+            action2.addParameter(new AttParameterText("phoneNumber", "1234567"));
+            profile.addChild(action2);
 
             AttSleep sleep1 = new AttSleep(10000);
             sleep1.setName("Wait 10s");
@@ -387,5 +378,5 @@ public class HostApp {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-    }
+    }*/
 }
