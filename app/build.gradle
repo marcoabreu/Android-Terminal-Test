@@ -31,7 +31,20 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':terminalcommunication')
-    testCompile 'junit:junit:4.12'
+    //testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'org.apache-extras.beanshell:bsh:2.0b6'
 }
+/*
+task deleteJar(type: Delete) {
+    delete 'libs/androidterminaltest.jar'
+}
+
+task createJar(type: Copy) {
+    from('build/intermediates/bundes/release')
+    into('libs/')
+    include('classes.jar')
+    rename('classes.jar', 'androidterminaltest.jar')
+}
+
+createJar.dependsOn(deleteJar, build)*/

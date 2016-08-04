@@ -25,8 +25,10 @@ public class RuntimeDexCompiler {
     private static final String DEX_FILENAME = "classes.dex";
 
     private static final String[] DEPENDENCIES = new String[] {
+            //TODO: relative paths
             "ANDROID_HOME/platforms/android-22/android.jar", // Android library
-            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar" //TODO: replace Shared communication library
+            //Android app
+            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar" //Shared communication library
     };
 
     private final String sourceDirectory;
@@ -51,7 +53,7 @@ public class RuntimeDexCompiler {
      * @throws IOException
      * @throws InterruptedException
      */
-    public Pair<File, Map<String, String>> convert() throws IOException, InterruptedException {
+    public Pair<File, Map<String, String>> convert() throws IOException, InterruptedException, CompilerException {
         Map<String, String> mapping = compileToClass();
         File dexFile = convertToDex();
         return Pair.of(dexFile, mapping);
@@ -60,7 +62,7 @@ public class RuntimeDexCompiler {
     /**
      * Compile java source code into class-file
      */
-    private Map<String, String> compileToClass() throws IOException, InterruptedException {
+    private Map<String, String> compileToClass() throws IOException, InterruptedException, CompilerException {
         //Find all java files and write to sources.txt
         Map<String, String> classpathMapping = new HashMap<>();
         File sourceListFile = new File(getTemporaryDirectory(), SOURCE_FILENAME);
@@ -104,6 +106,10 @@ public class RuntimeDexCompiler {
 
         Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
 
+        if(buildDir.list().length == 0) {
+            throw new CompilerException("Unable to generate class files with buildstring: " + buildString);
+        }
+
         return classpathMapping;
     }
 
@@ -117,7 +123,7 @@ public class RuntimeDexCompiler {
     /**
      * Convert class-file into android-specific dex-file
      */
-    private File convertToDex() throws IOException, InterruptedException {
+    private File convertToDex() throws IOException, InterruptedException, CompilerException {
         //TODO: use ANDROID_HOME
         String buildString = "C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\build-tools\\24.0.0\\dx.bat --dex --output DEXFILE BUILDDIR";
         buildString = buildString.replace("DEXFILE", DEX_FILENAME);
@@ -126,6 +132,10 @@ public class RuntimeDexCompiler {
         Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
 
         File dexFile = new File(getTemporaryDirectory(), DEX_FILENAME);
+
+        if(!dexFile.exists()) {
+            throw new CompilerException("Unable to generate dex file with buildstring: " + buildString);
+        }
 
         return dexFile;
     }

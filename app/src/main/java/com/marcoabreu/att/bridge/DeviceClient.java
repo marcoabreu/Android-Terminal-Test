@@ -113,8 +113,11 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 //Read messages in loop
                 while(true) {
                     BaseMessage message = (BaseMessage) in.readObject();
-                    Log.d(TAG, "Received message");
-                    deviceClient.invokeOnMessage(pairedHost, message);
+                    if(message.getOccuredException() != null) {
+                        onException(message.getOccuredException());
+                    } else {
+                        deviceClient.invokeOnMessage(pairedHost, message);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -124,5 +127,10 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void onException(Exception ex) {
+        //TODO handle properly
+        ex.printStackTrace();
     }
 }
