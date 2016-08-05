@@ -9,6 +9,7 @@ import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttActionDevice;
 import com.marcoabreu.att.profile.data.AttActionHost;
+import com.marcoabreu.att.profile.data.AttParameterScriptDevice;
 import com.marcoabreu.att.profile.data.AttParameterText;
 import com.marcoabreu.att.profile.data.AttProfile;
 import com.marcoabreu.att.profile.data.AttSleep;
@@ -342,6 +343,13 @@ public class HostApp {
             profile.setIdentifier("TestId");
             profile.setName("Testname");
 
+            AttActionHost userMessage2 = new AttActionHost();
+            userMessage2.setName("Show message");
+            userMessage2.setMethod("showMessage");
+            userMessage2.setPath("UserInteraction/Message");
+            userMessage2.addParameter(new AttParameterText("message", "Setting up Koppelfeld"));
+            profile.addChild(userMessage2);
+
             AttActionHost action1 = new AttActionHost();
             action1.setName("Set up Koppelfeld");
             action1.setMethod("connectCells");
@@ -355,17 +363,12 @@ public class HostApp {
             action1.addParameter(new AttParameterText("noise1", "93"));
             profile.addChild(action1);
 
-            AttActionDevice action2 = new AttActionDevice();
-            action2.setName("Call Number");
-            action2.setMethod("startCall");
-            action2.setPath("Phone/Calls");
-            action2.setTimeoutMs(60000);
-            action2.addParameter(new AttParameterText("phoneNumber", "12356700000"));
-            profile.addChild(action2);
-
-            AttSleep sleep1 = new AttSleep(5000);
-            sleep1.setName("Wait 5s");
-            profile.addChild(sleep1);
+            AttActionHost userMessage8 = new AttActionHost();
+            userMessage8.setName("Show message");
+            userMessage8.setMethod("showMessage");
+            userMessage8.setPath("UserInteraction/Message");
+            userMessage8.addParameter(new AttParameterText("message", "Changing signals"));
+            profile.addChild(userMessage8);
 
             AttActionHost action4 = new AttActionHost();
             action4.setName("Set signal strengths");
@@ -380,16 +383,69 @@ public class HostApp {
             action4.addParameter(new AttParameterText("noise1", "93"));
             profile.addChild(action4);
 
-            AttSleep sleep2 = new AttSleep(5000);
-            sleep2.setName("Wait 5s");
-            profile.addChild(sleep2);
+            AttActionHost userMessage3 = new AttActionHost();
+            userMessage3.setName("Show message");
+            userMessage3.setMethod("showMessage");
+            userMessage3.setPath("UserInteraction/Message");
+            userMessage3.addParameter(new AttParameterText("message", "Call with simple parameters"));
+            profile.addChild(userMessage3);
+
+            AttActionDevice action2 = new AttActionDevice();
+            action2.setName("Call Number");
+            action2.setMethod("startCall");
+            action2.setPath("Phone/Calls");
+            action2.setTargetDevice("device1");
+            action2.setTimeoutMs(60000);
+            action2.addParameter(new AttParameterText("phoneNumber", "12356700000"));
+            profile.addChild(action2);
+
+            AttSleep sleepAa = new AttSleep(5000);
+            sleepAa.setName("Wait 5s");
+            profile.addChild(sleepAa);
+
 
             AttActionDevice action3 = new AttActionDevice();
             action3.setName("layOffCall");
             action3.setMethod("endCall");
+            action3.setTargetDevice("device1");
             action3.setPath("Phone/Calls");
             action3.setTimeoutMs(60000);
             profile.addChild(action3);
+
+            AttActionHost userMessage4 = new AttActionHost();
+            userMessage4.setName("Show message");
+            userMessage4.setMethod("showMessage");
+            userMessage4.setPath("UserInteraction/Message");
+            userMessage4.addParameter(new AttParameterText("message", "Call with dynamic number"));
+            profile.addChild(userMessage4);
+
+            AttActionDevice action5 = new AttActionDevice();
+            action5.setName("Call Number");
+            action5.setMethod("startCall");
+            action5.setPath("Phone/Calls");
+            action5.setTargetDevice("device1");
+            action5.setTimeoutMs(60000);
+            profile.addChild(action5);
+
+            AttParameterScriptDevice deviceActionParam1 = new AttParameterScriptDevice();
+            deviceActionParam1.setKey("phoneNumber");
+            deviceActionParam1.setTargetDevice("device1");
+            deviceActionParam1.setMethod("getPhoneNumber");
+            deviceActionParam1.setPath("Phone/Informations");
+            deviceActionParam1.setTimeoutMs(60000);
+            action5.addParameter(deviceActionParam1);
+
+            AttSleep sleep4 = new AttSleep(10000);
+            sleep4.setName("Wait 10s");
+            profile.addChild(sleep4);
+
+            AttActionDevice action6 = new AttActionDevice();
+            action6.setName("layOffCall");
+            action6.setMethod("endCall");
+            action6.setTargetDevice("device1");
+            action6.setPath("Phone/Calls");
+            action6.setTimeoutMs(60000);
+            profile.addChild(action6);
 
             try {
                 ProfileMarshaller.saveProfile(profile, "");
@@ -408,7 +464,7 @@ public class HostApp {
 
             while(true) {
                 RunStatus runState = pe.getRunState();
-                System.out.println(runState);
+                //System.out.println(runState);
                 if(runState != RunStatus.RUNNING) {
                     break;
                 }

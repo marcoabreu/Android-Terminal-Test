@@ -90,10 +90,14 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                         Log.d(TAG, "Connected to host");
                     } catch(IOException ex) {
                         Log.e(TAG, "Unable to connect to host application, retrying...", ex);
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                        }
                     }
                 }
 
-                String identifyingString = "blabla"; //TODO
+                String identifyingString = "blabla"; //TODO put device id or something to identify the device and show something on the screen to the user
 
                 //TODO: Fire pairing event (to show the id of this device on the UI)
 

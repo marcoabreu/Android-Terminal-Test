@@ -1,5 +1,8 @@
 package com.marcoabreu.att.profile.data;
 
+import com.marcoabreu.att.device.DeviceManager;
+import com.marcoabreu.att.host.DeviceActionCompiler;
+
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,23 +16,27 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "ParameterScriptDevice")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class AttParameterScriptDevice extends AttParameterScript {
+    private DeviceActionCompiler compiler;
+
     @XmlAttribute(name = "targetDevice", required = true)
     private String targetDevice;
 
     @Override
     public Serializable getValue() {
-        //Load file content
-
-        //Send to device compiler
-
-        //Execute method
-
-        throw new RuntimeException();
+        try {
+            return compiler.executeReturn();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public void init() {
-        //TODO
+        try {
+            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceBySynonym(targetDevice), this);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public String getTargetDevice() {

@@ -1,6 +1,5 @@
 package com.marcoabreu.att.profile.data;
 
-import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
@@ -17,23 +16,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "ActionDevice")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class AttActionDevice extends AttAction {
-
     @XmlAttribute(name = "targetDevice", required = true)
     private String targetDevice;
-
-    /**
-     * Retrieve the target device from the device manager
-     * @return Instance of the physical device
-     */
-    private PhysicalDevice retrievePhysicalDevice() {
-        return DeviceManager.getInstance().getPairedDeviceBySynonym(targetDevice);
-    }
 
     @Override
     public Composite convertLogic() {
         final DeviceActionCompiler compiler;
         try {
-            compiler = new DeviceActionCompiler(retrievePhysicalDevice(), this);
+            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceBySynonym(targetDevice), this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
