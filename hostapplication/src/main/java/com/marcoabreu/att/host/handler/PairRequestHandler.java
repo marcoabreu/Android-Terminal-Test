@@ -7,7 +7,7 @@ import com.marcoabreu.att.communication.message.PairRequestMessage;
 import com.marcoabreu.att.communication.message.PairResponseMessage;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.device.PairedDevice;
-import com.marcoabreu.att.device.RuntimeDexCompiler;
+import com.marcoabreu.att.device.RuntimeCompiler;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,8 +31,9 @@ public class PairRequestHandler implements BridgeMessageListener{
             try {
                 //TODO remove local path
                 String basePath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device";
-                RuntimeDexCompiler compiler = new RuntimeDexCompiler(basePath);
-                Pair<File, Map<String, String>> compiledDex = compiler.convert();
+                String libPath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device\\libs";
+                RuntimeCompiler compiler = new RuntimeCompiler(basePath);
+                Pair<File, Map<String, String>> compiledDex = compiler.convertDex(new File(libPath));
                 response.setDexFileContent(FileUtils.readFileToByteArray(compiledDex.getLeft()));
 
                 Map<String, String> classpathMapping = new HashMap<>();

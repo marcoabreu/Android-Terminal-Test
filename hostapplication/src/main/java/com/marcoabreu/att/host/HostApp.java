@@ -320,6 +320,8 @@ public class HostApp {
     //Working phone-calls
     public static void main(String args[]) {
         try {
+            JavaInterpreter.init();
+
             DeviceManager deviceManager = DeviceManager.getInstance();
 
             //register listeners

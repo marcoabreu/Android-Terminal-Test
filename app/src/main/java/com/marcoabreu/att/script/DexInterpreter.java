@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 import dalvik.system.DexClassLoader;
 
 /**
- * Interpreter to execute dynamic scripts
+ * Interpreter to execute dynamic scripts on android
  * Created by AbreuM on 04.08.2016.
  */
 public class DexInterpreter {

@@ -26,7 +26,7 @@ public abstract class ActionCompiler {
     }
 
     protected String getSourceFileContent(DynamicScript dynamicScript, boolean isHostFile) throws IOException {
-        //TODO: Turn into variable path and stuff - this is just for me
+        //TODO: Turn into dynamic path and stuff - this is just for me
         String baseDirectory = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\";
 
         if(isHostFile) {
