@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import bsh.EvalError;
-
 /**
  * Helper to compile and execute an action on the device
  * Created by AbreuM on 03.08.2016.
@@ -27,7 +25,7 @@ public class DeviceActionCompiler extends ActionCompiler {
     private final String scriptContent;
     private final String scriptPath;
 
-    public DeviceActionCompiler(PhysicalDevice device, DynamicScript dynamicScript) throws EvalError, IOException {
+    public DeviceActionCompiler(PhysicalDevice device, DynamicScript dynamicScript) throws IOException {
         super(dynamicScript);
         this.device = device;
         this.methodName = dynamicScript.getMethod();
@@ -37,7 +35,7 @@ public class DeviceActionCompiler extends ActionCompiler {
     }
 
     @Override
-    protected Serializable execute() throws EvalError, ExecutionException, InterruptedException, IOException {
+    protected Serializable execute() throws ExecutionException, InterruptedException, IOException {
         Map<String, Serializable> parameters = new HashMap<>();
 
         //Load parameters

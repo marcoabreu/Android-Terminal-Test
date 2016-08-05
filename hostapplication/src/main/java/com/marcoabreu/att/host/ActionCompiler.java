@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 
-import bsh.EvalError;
-
 /**
  * Helper to compile and execute an action on the host machine
  * Created by AbreuM on 01.08.2016.
@@ -18,7 +16,7 @@ import bsh.EvalError;
 public abstract class ActionCompiler {
     protected final DynamicScript dynamicScript;
 
-    public ActionCompiler(DynamicScript dynamicScript) throws EvalError, IOException {
+    public ActionCompiler(DynamicScript dynamicScript) throws IOException {
         this.dynamicScript = dynamicScript;
 
         //Init parameters
@@ -38,13 +36,13 @@ public abstract class ActionCompiler {
         return FileUtils.readFileToString(FileUtils.getFile(baseDirectory, dynamicScript.getPath() + ".java"));
     }
 
-    protected abstract Object execute() throws EvalError, ExecutionException, InterruptedException, IOException, InvocationTargetException, IllegalAccessException;
+    protected abstract Object execute() throws ExecutionException, InterruptedException, IOException, InvocationTargetException, IllegalAccessException;
 
-    public <T> T executeReturn() throws EvalError, InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
+    public <T> T executeReturn() throws InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
         return (T)execute();
     }
 
-    public void executeVoid() throws EvalError, InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
+    public void executeVoid() throws InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
         execute();
     }
 }

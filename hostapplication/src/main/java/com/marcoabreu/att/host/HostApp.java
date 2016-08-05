@@ -367,6 +367,23 @@ public class HostApp {
             sleep1.setName("Wait 5s");
             profile.addChild(sleep1);
 
+            AttActionHost action4 = new AttActionHost();
+            action4.setName("Set signal strengths");
+            action4.setMethod("setSignals");
+            action4.setPath("Peripherals/Koppelfeld");
+            action4.setTimeoutMs(60000);
+            action4.addParameter(new AttParameterText("3G_1", "20"));
+            action4.addParameter(new AttParameterText("3G_2", "20"));
+            action4.addParameter(new AttParameterText("3G_3", "20"));
+            action4.addParameter(new AttParameterText("3G_4", "40"));
+            action4.addParameter(new AttParameterText("2G_1", "0"));
+            action4.addParameter(new AttParameterText("noise1", "93"));
+            profile.addChild(action4);
+
+            AttSleep sleep2 = new AttSleep(5000);
+            sleep2.setName("Wait 5s");
+            profile.addChild(sleep2);
+
             AttActionDevice action3 = new AttActionDevice();
             action3.setName("layOffCall");
             action3.setMethod("endCall");
