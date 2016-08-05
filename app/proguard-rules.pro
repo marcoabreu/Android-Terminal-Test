@@ -17,3 +17,4 @@
 #}
 
 #-dontwarn java.lang.invoke.*
+-dontobfuscate

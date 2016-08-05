@@ -3,7 +3,6 @@ package com.marcoabreu.att;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -11,10 +10,6 @@ import android.widget.TextView;
 import com.marcoabreu.att.bridge.DeviceClient;
 import com.marcoabreu.att.bridge.handler.PairResponseHandler;
 import com.marcoabreu.att.bridge.handler.ScriptExecutionHandler;
-import com.marcoabreu.att.communication.BridgeMessageListener;
-import com.marcoabreu.att.communication.PhysicalDevice;
-import com.marcoabreu.att.communication.message.BaseMessage;
-import com.marcoabreu.att.communication.message.TestMessage;
 
 import java.io.IOException;
 
@@ -57,18 +52,6 @@ public class MainActivity extends AppCompatActivity {
             //Handler for dynamic script execution
             deviceClient.registerMessageListener(new ScriptExecutionHandler());
             deviceClient.registerMessageListener(new PairResponseHandler());
-
-            deviceClient.registerMessageListener(new BridgeMessageListener() {
-                @Override
-                public void onMessage(PhysicalDevice device, BaseMessage message) {
-                    if(message instanceof TestMessage) {
-                        Log.d(TAG, "Received test message: " + ((TestMessage)message).getMessage());
-                    } else {
-                        Log.d(TAG, "Received unknown message");
-                    }
-
-                }
-            });
 
             deviceClient.start();
         } catch (IOException e) {

@@ -2,13 +2,12 @@ package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.host.handler.PairRequestHandler;
 import com.marcoabreu.att.host.handler.DataStorageGetHandler;
 import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
+import com.marcoabreu.att.host.handler.PairRequestHandler;
 import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttActionDevice;
-import com.marcoabreu.att.profile.data.AttActionHost;
 import com.marcoabreu.att.profile.data.AttParameterText;
 import com.marcoabreu.att.profile.data.AttProfile;
 import com.marcoabreu.att.profile.data.AttSleep;
@@ -339,7 +338,7 @@ public class HostApp {
             profile.setIdentifier("TestId");
             profile.setName("Testname");
 
-            AttActionHost action1 = new AttActionHost();
+            /*AttActionHost action1 = new AttActionHost();
             action1.setName("Set up Koppelfeld");
             action1.setMethod("setSignals");
             action1.setPath("Peripherals/Koppelfeld");
@@ -350,19 +349,26 @@ public class HostApp {
             action1.addParameter(new AttParameterText("3G_4", "40"));
             action1.addParameter(new AttParameterText("2G_1", "0"));
             action1.addParameter(new AttParameterText("noise1", "93"));
-            profile.addChild(action1);
+            profile.addChild(action1);*/
 
             AttActionDevice action2 = new AttActionDevice();
             action2.setName("Call Number");
             action2.setMethod("startCall");
             action2.setPath("Phone/Calls");
             action2.setTimeoutMs(60000);
-            action2.addParameter(new AttParameterText("phoneNumber", "1234567"));
+            action2.addParameter(new AttParameterText("phoneNumber", "12356700000"));
             profile.addChild(action2);
 
-            AttSleep sleep1 = new AttSleep(10000);
-            sleep1.setName("Wait 10s");
+            AttSleep sleep1 = new AttSleep(5000);
+            sleep1.setName("Wait 5s");
             profile.addChild(sleep1);
+
+            AttActionDevice action3 = new AttActionDevice();
+            action3.setName("layOffCall");
+            action3.setMethod("endCall");
+            action3.setPath("Phone/Calls");
+            action3.setTimeoutMs(60000);
+            profile.addChild(action3);
 
             try {
                 ProfileMarshaller.saveProfile(profile, "");
@@ -374,8 +380,6 @@ public class HostApp {
                 Thread.sleep(1000);
                 System.out.println("Waiting for connection");
             }
-
-            Thread.sleep(5000);
 
             ProfileExecutor pe = new ProfileExecutor(profile);
 

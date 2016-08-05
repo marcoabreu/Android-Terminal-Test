@@ -81,7 +81,7 @@ public class Calls {
         return callState;
     }
 
-    public void endCall(DeviceRuntimeContainer runtime) throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException {
+    public static void endCall(DeviceRuntimeContainer runtime) throws InterruptedException, InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException {
         //Taken from http://stackoverflow.com/questions/20965702/end-incoming-call-programmatically
         String serviceManagerName = "android.os.ServiceManager";
         String serviceManagerNativeName = "android.os.ServiceManagerNative";
