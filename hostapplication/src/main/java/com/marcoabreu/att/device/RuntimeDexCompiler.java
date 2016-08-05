@@ -9,9 +9,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class to turn java source code into a dex file ready to be loaded by the device on runtime
@@ -25,9 +27,11 @@ public class RuntimeDexCompiler {
     private static final String DEX_FILENAME = "classes.dex";
 
     private static final String[] DEPENDENCIES = new String[] {
-            //TODO: relative paths
-            "ANDROID_HOME/platforms/android-22/android.jar", // Android library
-            //Android app
+            //TODO: do this nicely and use relative paths - especially try not to copy android libraries into our project (license????)
+            "C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\platforms\\android-22\\android.jar", // Android library
+            //Android app, but have no idea how so we just put everything into TerminalCommunication
+            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-appcompat-v7-24.0.0-classes.jar", //Android support library
+            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-support-v4-24.0.0-classes.jar", //Android support library
             "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar" //Shared communication library
     };
 
@@ -99,15 +103,26 @@ public class RuntimeDexCompiler {
 
         //TODO remove local paths
         //This requires JDK7 because of android-22
-        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @SOURCELISTFILE";
+        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @\"TEMPDIR\\SOURCELISTFILE\"";
         buildString = buildString.replace("DEPENDENCIES", String.join(";", DEPENDENCIES));
         buildString = buildString.replace("BUILDDIR", buildDir.getAbsolutePath());
         buildString = buildString.replace("SOURCELISTFILE", SOURCE_FILENAME);
+        buildString = buildString.replace("TEMPDIR", getTemporaryDirectory().getAbsolutePath());
 
-        Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
+        Process buildProcess = Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory());
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader processOutput = new BufferedReader(new InputStreamReader(buildProcess.getErrorStream()))) {
+            String line;
+            while ((line = processOutput.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+        }
+        buildProcess.waitFor(15, TimeUnit.SECONDS);
+
 
         if(buildDir.list().length == 0) {
-            throw new CompilerException("Unable to generate class files with buildstring: " + buildString);
+            throw new CompilerException("Unable to generate class files with buildstring: " + buildString + "\n" + sb.toString());
         }
 
         return classpathMapping;
@@ -129,7 +144,7 @@ public class RuntimeDexCompiler {
         buildString = buildString.replace("DEXFILE", DEX_FILENAME);
         buildString = buildString.replace("BUILDDIR", BUILD_DIRNAME);
 
-        Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor();
+        Runtime.getRuntime().exec(buildString, null, getTemporaryDirectory()).waitFor(15, TimeUnit.SECONDS);
 
         File dexFile = new File(getTemporaryDirectory(), DEX_FILENAME);
 
