@@ -23,12 +23,16 @@ public class ScriptRuntimeContainer {
         dataStorage = new DataStorageHostProxy(device);
     }
 
-    public void addParameter(String key, Object data) {
+    public <T> void addParameter(String key, T data) {
         parameters.put(key, data);
     }
 
     public Map<String, Object> getParameters() {
         return this.parameters;
+    }
+
+    public <T> T getParameter(String key) {
+        return (T)parameters.get(key);
     }
 
     public DataStorageHostProxy getDataStorage() {

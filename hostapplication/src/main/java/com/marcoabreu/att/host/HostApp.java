@@ -8,6 +8,7 @@ import com.marcoabreu.att.host.handler.PairRequestHandler;
 import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttActionDevice;
+import com.marcoabreu.att.profile.data.AttActionHost;
 import com.marcoabreu.att.profile.data.AttParameterText;
 import com.marcoabreu.att.profile.data.AttProfile;
 import com.marcoabreu.att.profile.data.AttSleep;
@@ -316,6 +317,7 @@ public class HostApp {
         }
     }*/
 
+    //Working phone-calls
     public static void main(String args[]) {
         try {
             DeviceManager deviceManager = DeviceManager.getInstance();
@@ -338,9 +340,9 @@ public class HostApp {
             profile.setIdentifier("TestId");
             profile.setName("Testname");
 
-            /*AttActionHost action1 = new AttActionHost();
+            AttActionHost action1 = new AttActionHost();
             action1.setName("Set up Koppelfeld");
-            action1.setMethod("setSignals");
+            action1.setMethod("connectCells");
             action1.setPath("Peripherals/Koppelfeld");
             action1.setTimeoutMs(60000);
             action1.addParameter(new AttParameterText("3G_1", "20"));
@@ -349,7 +351,7 @@ public class HostApp {
             action1.addParameter(new AttParameterText("3G_4", "40"));
             action1.addParameter(new AttParameterText("2G_1", "0"));
             action1.addParameter(new AttParameterText("noise1", "93"));
-            profile.addChild(action1);*/
+            profile.addChild(action1);
 
             AttActionDevice action2 = new AttActionDevice();
             action2.setName("Call Number");
@@ -403,11 +405,41 @@ public class HostApp {
         }
     }
 
+
     /*public static void main(String args[]) {
-        RuntimeDexCompiler compiler = new RuntimeDexCompiler("C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device");
+        SerialPort serial = new SerialPort("COM6");
         try {
-            compiler.convert();
-        } catch (IOException e) {
+            serial.openPort();
+            serial.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R1P1", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            Thread.sleep(2000);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R2P10", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            Thread.sleep(2000);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R3P20", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            Thread.sleep(2000);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R4P30", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            Thread.sleep(2000);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R5P40", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            Thread.sleep(2000);
+            serial.writeByte((byte)0x02);
+            serial.writeString("R6P50", "US-ASCII");
+            serial.writeByte((byte)0x03);
+            //serial.writeString("C");
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }*/
