@@ -11,10 +11,18 @@ public class PairRequestMessage extends BaseMessage{
     /**
      * Some randomly generated string shown on the device to identify it - basically a helper to know which device is trying connect
      */
-    private String identifyingString;
+    private String serialString;
 
-    public PairRequestMessage(String identifyingString) {
+    public PairRequestMessage(String serialString) {
         super(Opcode.PAIR_REQUEST);
-        this.identifyingString = identifyingString;
+        this.serialString = serialString;
+    }
+
+    public String getSerialString() {
+        return serialString;
+    }
+
+    public void setSerialString(String serialString) {
+        this.serialString = serialString;
     }
 }

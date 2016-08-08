@@ -1,6 +1,7 @@
 package com.marcoabreu.att;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -17,9 +18,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.toString();
     private static Context context;
 
-    TextView info, infoip, msg;
+    TextView info;
     Button compilerTestButton;
-    String message = "";
     DeviceClient deviceClient;
 
     @Override
@@ -31,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         info = (TextView) findViewById(R.id.textViewInfo);
-        infoip = (TextView) findViewById(R.id.textViewInfoIp);
-        msg = (TextView) findViewById(R.id.textViewMsg);
         compilerTestButton = (Button) findViewById(R.id.button);
 
         compilerTestButton.setOnClickListener(new View.OnClickListener() {
@@ -42,9 +40,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Thread socketServerThread = new Thread(new SocketServerThread());
-        //socketServerThread.start();
-
+        info.setText("Serial: " + Build.SERIAL);
 
         try {
             deviceClient = new DeviceClient(12022);

@@ -2,6 +2,8 @@ package com.marcoabreu.att.device;
 
 import com.marcoabreu.att.communication.BridgeEndpoint;
 import com.marcoabreu.att.communication.BridgeMessageListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by AbreuM on 02.08.2016.
  */
 public class DeviceServer implements Closeable, BridgeEndpoint {
+    private static final Logger LOG = LogManager.getLogger();
     private final int port;
     private final DeviceManager deviceManager;
     private ServerSocket serverSocket;
@@ -34,11 +37,11 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     }
 
     public void start() throws IOException {
+        LOG.debug("Start listening for device pairings on port " + port);
         serverSocket = new ServerSocket(port);
         pairingThread = new Thread(new PairingListenerThread(serverSocket, this));
         pairingThread.setDaemon(true);
         pairingThread.start();
-
     }
 
     @Override
@@ -96,6 +99,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
                     PairedDevice pairedDevice = new PairedDevice(deviceServer, in, out);
+                    LOG.info("New pairing attempt");
 
                     //Start listener for incoming messages
                     Thread messageHandlerThread = new Thread(new DeviceMessageThread(pairedDevice, deviceServer));
@@ -125,6 +129,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
             try (PairedDevice device = pairedDevice) {
                 while (true) {
                     com.marcoabreu.att.communication.message.BaseMessage message = device.readMessage();
+                    LOG.debug("Received message on device " + device.getSerial() + " : " + message.getClass().getName());
                     deviceServer.invokeOnMessage(device, message);
                 }
             } catch (IOException ex) {

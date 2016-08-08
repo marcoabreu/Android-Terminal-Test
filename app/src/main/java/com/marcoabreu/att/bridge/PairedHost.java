@@ -10,6 +10,6 @@ import java.io.ObjectOutputStream;
  */
 public class PairedHost extends PhysicalDevice {
     public PairedHost(DeviceClient deviceClient, ObjectInputStream in, ObjectOutputStream out)  {
-        super("TODO", deviceClient, in, out); //TODO whatever we want to do here with the id
+        super(deviceClient, in, out); //TODO whatever we want to do here with the id
     }
 }

@@ -28,7 +28,12 @@ public class PairRequestHandler implements BridgeMessageListener{
             PairRequestMessage request = (PairRequestMessage) message;
             PairResponseMessage response = new PairResponseMessage(request);
 
+            PairedDevice pairedDevice = (PairedDevice)device;
+
             try {
+                pairedDevice.setSerial(request.getSerialString());
+                pairedDevice.setJadbDevice(DeviceManager.getInstance().getConnectedDevices().stream().filter(jadbDevice -> jadbDevice.getSerial().equals(pairedDevice.getSerial())).findFirst().get());
+
                 //TODO remove local path
                 String basePath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device";
                 String libPath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device\\libs";
@@ -45,8 +50,7 @@ public class PairRequestHandler implements BridgeMessageListener{
 
                 response.setClasspathMapping(classpathMapping);
 
-                DeviceManager.getInstance().addPairedDevice((PairedDevice) device);
-                //TODO: Notify a device has been paired
+                DeviceManager.getInstance().registerPairedDevice((PairedDevice) device);
 
             } catch (Exception ex) {
                 response.setOccuredException(ex);

@@ -12,13 +12,12 @@ import java.io.ObjectOutputStream;
  * Created by AbreuM on 03.08.2016.
  */
 public class PhysicalDevice implements Closeable {
-    private final String id;
     private final BridgeEndpoint bridgeEndpoint;
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
+    private String serial = "unknown";
 
-    public PhysicalDevice(String id, BridgeEndpoint bridgeEndpoint, ObjectInputStream in, ObjectOutputStream out) {
-        this.id = id;
+    public PhysicalDevice(BridgeEndpoint bridgeEndpoint, ObjectInputStream in, ObjectOutputStream out) {
         this.bridgeEndpoint = bridgeEndpoint;
         this.in = in;
         this.out = out;
@@ -77,7 +76,11 @@ public class PhysicalDevice implements Closeable {
         //Thread is automatically closed due to closing of streams
     }
     
-    public String getId() {
-        return this.id;
+    public String getSerial() {
+        return this.serial;
+    }
+
+    public void setSerial(String serial) {
+        this.serial = serial;
     }
 }

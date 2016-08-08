@@ -1,20 +1,11 @@
 package com.marcoabreu.att.host;
 
-import com.marcoabreu.att.device.DeviceManager;
-import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.host.handler.DataStorageGetHandler;
-import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
-import com.marcoabreu.att.host.handler.PairRequestHandler;
-import com.marcoabreu.att.profile.ProfileExecutor;
-import com.marcoabreu.att.profile.ProfileMarshaller;
-import com.marcoabreu.att.profile.data.AttActionDevice;
-import com.marcoabreu.att.profile.data.AttActionHost;
-import com.marcoabreu.att.profile.data.AttParameterScriptDevice;
-import com.marcoabreu.att.profile.data.AttParameterText;
-import com.marcoabreu.att.profile.data.AttProfile;
-import com.marcoabreu.att.profile.data.AttSleep;
+import com.marcoabreu.att.ui.MainForm;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 
-import javax.xml.bind.JAXBException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class HostApp {
     /*
@@ -319,7 +310,7 @@ public class HostApp {
     }*/
 
     //Working phone-calls
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         try {
             JavaInterpreter.init();
 
@@ -478,7 +469,7 @@ public class HostApp {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-    }
+    }*/
 
 
     /*public static void main(String args[]) {
@@ -518,4 +509,28 @@ public class HostApp {
             e.printStackTrace();
         }
     }*/
+
+    public static void main(String args[]) {
+        LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
+        try {
+            URL resource = new HostApp().
+                    getClass().
+                    getClassLoader().
+                    getResource("log4j2.xml");
+            context.setConfigLocation(resource.toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        MainForm form = new MainForm();
+        form.show();
+
+        while(true) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

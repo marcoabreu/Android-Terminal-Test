@@ -1,5 +1,6 @@
 package com.marcoabreu.att.bridge;
 
+import android.os.Build;
 import android.util.Log;
 
 import com.marcoabreu.att.communication.BridgeEndpoint;
@@ -97,21 +98,18 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                     }
                 }
 
-                String identifyingString = "blabla"; //TODO put device id or something to identify the device and show something on the screen to the user
-
-                //TODO: Fire pairing event (to show the id of this device on the UI)
+                //TODO: Fire pairing event (to show the id of this device on the UI) Build.SERIAL
 
                 //out.flush() has to be done first to publish headers
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 out.flush();
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-
                 PairedHost pairedHost = new PairedHost(deviceClient, in, out);
 
                 //Send pairing request
                 Log.d(TAG, "Attempting to pair");
-                out.writeObject(new PairRequestMessage(identifyingString));
+                out.writeObject(new PairRequestMessage(Build.SERIAL));
 
 
                 //Read messages in loop

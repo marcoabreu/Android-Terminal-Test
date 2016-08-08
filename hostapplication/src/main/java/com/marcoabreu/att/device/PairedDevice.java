@@ -1,6 +1,7 @@
 package com.marcoabreu.att.device;
 
 import com.marcoabreu.att.communication.PhysicalDevice;
+import se.vidstige.jadb.JadbDevice;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,13 +11,20 @@ import java.io.ObjectOutputStream;
  * Created by AbreuM on 02.08.2016.
  */
 public class PairedDevice extends PhysicalDevice {
+    private JadbDevice jadbDevice;
     private Thread messageThread;
 
     public PairedDevice(DeviceServer deviceServer, ObjectInputStream in, ObjectOutputStream out)  {
-        super("TODO", deviceServer, in, out); //TODO get the unique ID
+        super(deviceServer, in, out);
     }
 
+    public JadbDevice getJadbDevice() {
+        return jadbDevice;
+    }
 
+    public void setJadbDevice(JadbDevice jadbDevice) {
+        this.jadbDevice = jadbDevice;
+    }
 
     public Thread getMessageThread() {
         return messageThread;

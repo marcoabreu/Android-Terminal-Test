@@ -15,6 +15,7 @@ import java.io.Serializable;
  */
 public class DataStorageDeviceProxy {
     //We request the data from the host over the network and keep it all at one place instead of mirroring it the whole time
+    //TODO: Consider if device-specific data should reside on the device (most objects are not serializable)
     private final PhysicalDevice host;
 
     public DataStorageDeviceProxy(PhysicalDevice host) {

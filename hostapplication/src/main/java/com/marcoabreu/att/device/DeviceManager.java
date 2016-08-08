@@ -1,53 +1,56 @@
 package com.marcoabreu.att.device;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import se.vidstige.jadb.AdbServerLauncher;
-import se.vidstige.jadb.JadbConnection;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
-import se.vidstige.jadb.Transport;
+import org.apache.logging.log4j.Logger;
+import se.vidstige.jadb.*;
 import se.vidstige.jadb.managers.Package;
 import se.vidstige.jadb.managers.PackageManager;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Central element for device interaction
  * Created by AbreuM on 02.08.2016.
  */
 public class DeviceManager {
+    private static final Logger LOG = org.apache.logging.log4j.LogManager.getLogger();
     private static final int SERVER_PORT = 12022;
+    private static final int CONNECTION_WATCHER_DELAY_MS = 2000;
     private static DeviceManager instance;
     private DeviceServer deviceServer;
     private Set<PairedDevice> pairedDevices;
     private Map<String, PairedDevice> assignedDevices;
+    private Thread connectionThread;
 
-    public static DeviceManager getInstance() {
-        //TODO make it nice
+    private Set<DeviceConnectionListener> deviceConnectionListeners;
+
+    public static synchronized DeviceManager getInstance() {
         if(instance == null) {
             try {
                 instance = new DeviceManager();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
 
         return instance;
     }
 
-    public DeviceManager() throws IOException {
+    private DeviceManager() throws IOException {
         pairedDevices = ConcurrentHashMap.newKeySet();
         assignedDevices = new HashMap<>();
         deviceServer = new DeviceServer(this, SERVER_PORT);
-
+        deviceConnectionListeners = new HashSet<>();
     }
 
     public void start() throws IOException, InterruptedException {
         new AdbServerLauncher().launch();
+
+        connectionThread = new Thread(new ConnectedDevicesThread());
+        connectionThread.setDaemon(true);
+        connectionThread.start();
+
         deviceServer.start();
     }
 
@@ -92,8 +95,34 @@ public class DeviceManager {
         return this.pairedDevices;
     }
 
-    public void addPairedDevice(PairedDevice device) {
+    public void registerPairedDevice(PairedDevice device) {
+        LOG.info("Paired successfully to device " + device.getSerial());
         this.pairedDevices.add(device);
+        invokeOnDevicePaired(device);
+    }
+
+    public void addDevicePairedListener(DeviceConnectionListener listener) {
+        this.deviceConnectionListeners.add(listener);
+    }
+
+    private void invokeOnDevicePaired(PairedDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDevicePaired(device));
+    }
+
+    private void invokeOnDeviceUnpaired(PairedDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceUnpaired(device));
+    }
+
+    private void invokeOnDeviceConnected(JadbDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceConnected(device));
+    }
+
+    private void invokeOnDeviceDisconnected(JadbDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceDisconnected(device));
+    }
+
+    private void invokeOnDeviceNeedPermission(JadbDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceNeedPermission(device));
     }
 
     /**
@@ -121,5 +150,50 @@ public class DeviceManager {
 
     public DeviceServer getDeviceServer() {
         return deviceServer;
+    }
+
+    /**
+     * Thread to watch devices connected via USB (TODO: consider if should be pairing automatically)
+     */
+    private class ConnectedDevicesThread implements Runnable {
+        @Override
+        public void run() {
+
+            Set<JadbDevice> previouslyConnectedDevices = new HashSet<>();
+            while(true) {
+                try {
+                    Set<JadbDevice> connectedDevices = new HashSet<>(getConnectedDevices());
+                    Set<JadbDevice> finalPreviouslyConnectedDevices = previouslyConnectedDevices; //Required because of lambda
+                    previouslyConnectedDevices = connectedDevices;
+
+                    //Check for disconnected devices
+                    finalPreviouslyConnectedDevices.stream().filter(device -> !connectedDevices.contains(device)).forEach(device -> {
+                        invokeOnDeviceDisconnected(device);
+                    });
+
+                    //Check for newly connected devices
+                    connectedDevices.stream().filter(device -> !finalPreviouslyConnectedDevices.contains(device)).forEach(device -> {
+                        invokeOnDeviceConnected(device);
+
+                        //TODO: Check if permission required
+                        if(false) {
+                            invokeOnDeviceNeedPermission(device);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (JadbException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    Thread.sleep(CONNECTION_WATCHER_DELAY_MS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
