@@ -1,5 +1,6 @@
 package com.marcoabreu.att.device;
 
+import com.marcoabreu.att.ui.AssignDeviceDialog;
 import org.apache.logging.log4j.Logger;
 import se.vidstige.jadb.*;
 import se.vidstige.jadb.managers.Package;
@@ -65,7 +66,6 @@ public class DeviceManager {
      * @throws JadbException
      */
     public List<JadbDevice> getConnectedDevices() throws IOException, InterruptedException, JadbException {
-        //new AdbServerLauncher().launch(); //TODO only request start if necessary - this is a hell of slow
         return createConnection().getDevices();
     }
 
@@ -78,20 +78,29 @@ public class DeviceManager {
         PairedDevice device = assignedDevices.get(alias);
         if(device == null) {
             //Device not defined, ask the user
-            //TODO: Ask the user -> addDeviceAssignment
-            addDeviceAssignment(getPairedDevices().iterator().next(), alias);
+            showAssignDeviceDialog(alias);
 
-
-            return getPairedDeviceByAlias(alias); //Recursive in case user enters rubbish or closes the dialog. TODO: Reconsider this way
+            return getPairedDeviceByAlias(alias); //Recursive in case user enters rubbish or closes the dialog.
         } else {
             return device;
+        }
+    }
+
+    private void showAssignDeviceDialog(String alias) {
+        Set<PairedDevice> unassignedDevices = getPairedDevices();
+        unassignedDevices.removeAll(assignedDevices.entrySet());
+        AssignDeviceDialog dialog = new AssignDeviceDialog(alias, unassignedDevices);
+        PairedDevice selectedDevice = dialog.showDialog();
+
+        if(selectedDevice != null) {
+            addDeviceAssignment(selectedDevice, alias);
         }
     }
 
     public synchronized void addDeviceAssignment(PairedDevice device, String alias) {
         LOG.info("Assigning " + device.toString() + " to alias " + alias);
         this.assignedDevices.put(alias, device);
-        invokeOnDeviceAssigned(device);
+        invokeOnDeviceAssigned(device, alias);
     }
 
     public void removeDeviceAssignment(String alias) {
@@ -142,8 +151,8 @@ public class DeviceManager {
         deviceConnectionListeners.forEach(listener -> listener.onDeviceNeedPermission(device));
     }
 
-    public void invokeOnDeviceAssigned(PairedDevice device) {
-        deviceConnectionListeners.forEach(listener -> listener.onDeviceAssigned(device));
+    public void invokeOnDeviceAssigned(PairedDevice device, String alias) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceAssigned(device, alias));
     }
 
     public void invokeOnDeviceUnassigned(PairedDevice device) {

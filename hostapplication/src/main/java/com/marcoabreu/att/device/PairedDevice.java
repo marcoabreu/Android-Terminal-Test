@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 public class PairedDevice extends PhysicalDevice {
     private JadbDevice jadbDevice;
     private Thread messageThread;
+    private String deviceModel;
 
     public PairedDevice(DeviceServer deviceServer, ObjectInputStream in, ObjectOutputStream out)  {
         super(deviceServer, in, out);
@@ -32,5 +33,18 @@ public class PairedDevice extends PhysicalDevice {
 
     public void setMessageThread(Thread messageThread) {
         this.messageThread = messageThread;
+    }
+
+    public String getDeviceModel() {
+        return deviceModel;
+    }
+
+    public void setDeviceModel(String deviceModel) {
+        this.deviceModel = deviceModel;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("PairedDevice: %s", this.getSerial());
     }
 }

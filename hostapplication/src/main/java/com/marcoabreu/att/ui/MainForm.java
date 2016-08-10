@@ -171,8 +171,8 @@ public class MainForm {
             }
 
             @Override
-            public void onDeviceAssigned(PairedDevice device) {
-                SwingUtilities.invokeLater(() -> deviceAssignedHandler(device));
+            public void onDeviceAssigned(PairedDevice device, String alias) {
+                SwingUtilities.invokeLater(() -> deviceAssignedHandler(device, alias));
             }
 
             @Override
@@ -322,6 +322,7 @@ public class MainForm {
     private void devicePairedHandler(PairedDevice device) {
         DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
         DeviceTableItemModel.DeviceTableData data = model.getDeviceData(device.getJadbDevice());
+        data.setDeviceModel(device.getDeviceModel());
         data.setConnectionStatus(PAIRED);
         model.fireTableDataChanged();
     }
@@ -354,10 +355,11 @@ public class MainForm {
         model.fireTableDataChanged();
     }
 
-    private void deviceAssignedHandler(PairedDevice device) {
+    private void deviceAssignedHandler(PairedDevice device, String alias) {
         DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
         DeviceTableItemModel.DeviceTableData data = model.getDeviceData(device.getJadbDevice());
         data.setConnectionStatus(ASSIGNED);
+        data.setAlias(alias);
         model.fireTableDataChanged();
     }
 
@@ -365,6 +367,7 @@ public class MainForm {
         DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
         DeviceTableItemModel.DeviceTableData data = model.getDeviceData(device.getJadbDevice());
         data.setConnectionStatus(PAIRED);
+        data.setAlias("-");
         model.fireTableDataChanged();
     }
 
@@ -401,7 +404,7 @@ public class MainForm {
         devicesTable = new JTable();
         scrollPane1.setViewportView(devicesTable);
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panel3.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
         tabbedPane1.addTab("Profile", panel3);
         startButton = new JButton();
         startButton.setText("Start");
@@ -510,6 +513,7 @@ public class MainForm {
             private final JadbDevice jadbDevice;
             private ConnectionStatus connectionStatus = UNPAIRED;
             private String alias = "-";
+            private String deviceModel = "unspecified";
 
             public DeviceTableData(JadbDevice jadbDevice) {
                 this.jadbDevice = jadbDevice;
@@ -520,7 +524,7 @@ public class MainForm {
             }
 
             public String getDeviceType() {
-                return "TODO"; //TODO
+                return this.deviceModel;
             }
 
             public ConnectionStatus getConnectionStatus() {
@@ -537,6 +541,14 @@ public class MainForm {
 
             public void setAlias(String alias) {
                 this.alias = alias;
+            }
+
+            public String getDeviceModel() {
+                return deviceModel;
+            }
+
+            public void setDeviceModel(String deviceModel) {
+                this.deviceModel = deviceModel;
             }
         }
     }

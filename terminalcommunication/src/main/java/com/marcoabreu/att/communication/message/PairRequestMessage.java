@@ -7,15 +7,13 @@ import com.marcoabreu.att.communication.Opcode;
  * Created by AbreuM on 02.08.2016.
  */
 public class PairRequestMessage extends BaseMessage{
-
-    /**
-     * Some randomly generated string shown on the device to identify it - basically a helper to know which device is trying connect
-     */
     private String serialString;
+    private String deviceModel;
 
-    public PairRequestMessage(String serialString) {
+    public PairRequestMessage(String serialString, String deviceModel) {
         super(Opcode.PAIR_REQUEST);
         this.serialString = serialString;
+        this.deviceModel = deviceModel;
     }
 
     public String getSerialString() {
@@ -24,5 +22,13 @@ public class PairRequestMessage extends BaseMessage{
 
     public void setSerialString(String serialString) {
         this.serialString = serialString;
+    }
+
+    public String getDeviceModel() {
+        return deviceModel;
+    }
+
+    public void setDeviceModel(String deviceModel) {
+        this.deviceModel = deviceModel;
     }
 }

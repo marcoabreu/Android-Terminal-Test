@@ -136,7 +136,7 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
 
                 //Send pairing request
                 Log.d(TAG, "Attempting to pair");
-                out.writeObject(new PairRequestMessage(Build.SERIAL));
+                out.writeObject(new PairRequestMessage(Build.SERIAL, Build.MANUFACTURER + " - " + Build.MODEL));
 
 
                 //Read messages in loop
@@ -161,7 +161,7 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
     }
 
     private void onException(Exception ex) {
-        //TODO handle properly
+        //TODO handle properly, but so far I see no reason to handle them on the device
         ex.printStackTrace();
     }
 }

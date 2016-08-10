@@ -3,14 +3,10 @@ package com.marcoabreu.att.device;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,9 +17,9 @@ import java.util.concurrent.TimeUnit;
  * Class to turn java source code into a class (JavaSE) or dex (Android) file ready to be loaded on runtime
  * Created by AbreuM on 04.08.2016.
  */
-//TODO: Add error handling, Runtime.exec does not return any messages
 public class RuntimeCompiler {
     //Inspired by http://stackoverflow.com/questions/29348327/creating-a-dex-file-from-java-source-code
+    private static final Logger LOG = LogManager.getLogger();
     private static final String SOURCE_FILENAME = "sources.txt";
     private static final String BUILD_DIRNAME = "build";
     private static final String DEX_FILENAME = "classes.dex";
@@ -129,7 +125,7 @@ public class RuntimeCompiler {
 
         //TODO remove local paths
         //This requires JDK7 because of android-22
-        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @\"TEMPDIR\\SOURCELISTFILE\"";
+        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -nowarn -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @\"TEMPDIR\\SOURCELISTFILE\"";
         buildString = buildString.replace("DEPENDENCIES", String.join(";", dependencyPaths));
         buildString = buildString.replace("BUILDDIR", buildDir.getAbsolutePath());
         buildString = buildString.replace("SOURCELISTFILE", SOURCE_FILENAME);
@@ -146,9 +142,10 @@ public class RuntimeCompiler {
         }
         buildProcess.waitFor(15, TimeUnit.SECONDS);
 
+        String buildResult = sb.toString();
 
-        if(buildDir.list().length == 0) {
-            throw new CompilerException("Unable to generate class files with buildstring: " + buildString + "\n" + sb.toString());
+        if(buildDir.list().length == 0 || !buildResult.isEmpty()) {
+            throw new CompilerException("Unable to generate class files with buildstring: " + buildString + "\n" + buildResult);
         }
 
         return classpathMapping;

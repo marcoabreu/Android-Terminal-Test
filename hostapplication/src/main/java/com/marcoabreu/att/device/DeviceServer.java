@@ -23,6 +23,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     private final int port;
     private final DeviceManager deviceManager;
     private ServerSocket serverSocket;
+    private PairingListenerThread pairingThreadRunnable;
     private Thread pairingThread;
     private Set<BridgeMessageListener> listeners;
 
@@ -39,7 +40,8 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     public void start() throws IOException {
         LOG.debug("Start listening for device pairings on port " + port);
         serverSocket = new ServerSocket(port);
-        pairingThread = new Thread(new PairingListenerThread(serverSocket, this));
+        pairingThreadRunnable = new PairingListenerThread(serverSocket, this);
+        pairingThread = new Thread(pairingThreadRunnable);
         pairingThread.setDaemon(true);
         pairingThread.start();
     }
@@ -50,7 +52,10 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     }
 
     public void stop() {
-        //TODO: Close listener thread and close connection to all devices
+        //Close listener thread and close connection to all devices
+        if(pairingThreadRunnable != null) {
+            pairingThreadRunnable.stop();
+        }
     }
 
     @Override
@@ -82,14 +87,33 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
     private class PairingListenerThread implements Runnable {
         private final ServerSocket socket;
         private final DeviceServer deviceServer;
+        private boolean run = true;
         public PairingListenerThread(ServerSocket socket, DeviceServer deviceServer) {
             this.socket = socket;
             this.deviceServer = deviceServer;
         }
 
+        /**
+         * Ask the thread and its children to stop
+         */
+        public void stop() {
+            run = false;
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
+
+            for(PairedDevice device : deviceManager.getPairedDevices()) {
+                try {
+                    device.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
         @Override
         public void run() {
-            while (true) {
+            while (run) {
                 try {
                     Socket socket = serverSocket.accept(); //new device attempting to connect
 

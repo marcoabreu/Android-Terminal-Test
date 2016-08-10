@@ -32,6 +32,7 @@ public class PairRequestHandler implements BridgeMessageListener{
 
             try {
                 pairedDevice.setSerial(request.getSerialString());
+                pairedDevice.setDeviceModel(request.getDeviceModel());
                 pairedDevice.setJadbDevice(DeviceManager.getInstance().getConnectedDevices().stream().filter(jadbDevice -> jadbDevice.getSerial().equals(pairedDevice.getSerial())).findFirst().get());
 
                 //TODO remove local path

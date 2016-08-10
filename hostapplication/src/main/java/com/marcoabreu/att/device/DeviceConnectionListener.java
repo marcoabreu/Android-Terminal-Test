@@ -41,7 +41,7 @@ public interface DeviceConnectionListener {
      * Event thrown after a device has been assigned to an alias
      * @param device
      */
-    void onDeviceAssigned(PairedDevice device);
+    void onDeviceAssigned(PairedDevice device, String alias);
 
     /**
      * Event thrown upon removing the assignment of a device - it is still paired

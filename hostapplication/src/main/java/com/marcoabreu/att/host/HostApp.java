@@ -31,8 +31,6 @@ public class HostApp {
 
             //Launch app
             PackageManager pm = new PackageManager(curDevice);
-            //TODO PackageManager install app if not installed and execute
-            //TODO: adb shell pm grant com.your.package android.permission.WRITE_EXTERNAL_STORAGE to grant all permissions
             pm.launch(new Package("com.marcoabreu.att"));
             Thread.sleep(5000);
         } catch (IOException e) {

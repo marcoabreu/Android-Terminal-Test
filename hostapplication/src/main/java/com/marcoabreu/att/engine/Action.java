@@ -7,11 +7,7 @@ import java.util.function.Supplier;
  * Created by AbreuM on 30.06.2016.
  */
 public class Action extends Composite {
-    //TODO: Condition
-    //private Object successCondition; //Allows action to succeed earlier than the defined timeframe
-
-    //private int fixedDurationMs; //Action has a fixed time, it will succeed after this timeframe
-    //private int timeoutDurationMs; //Action fails if success condition was not met within this timeframe
+    //TODO: add timeout
     private final Supplier<Boolean> runnable;
 
     /**
