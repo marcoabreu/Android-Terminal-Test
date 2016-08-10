@@ -17,12 +17,21 @@
         android:id="@+id/textViewInfo"
         android:layout_alignParentStart="true" />
 
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="textViewStatus"
+            android:id="@+id/textViewStatus"
+            android:layout_below="@+id/textViewInfo"
+            android:layout_alignParentStart="true" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Compiler-test"
         android:id="@+id/button"
-        android:layout_below="@+id/textViewInfo"
+        android:layout_below="@+id/textViewStatus"
         android:layout_alignParentStart="true"
         android:layout_marginTop="46dp" />
 </RelativeLayout>

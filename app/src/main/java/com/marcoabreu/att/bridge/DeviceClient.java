@@ -26,13 +26,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DeviceClient implements Closeable, BridgeEndpoint{
     private static final String TAG = "DeviceClient";
     private final int port;
+    private PairedHost pairedHost;
     private Socket socket;
     private Thread bridgeThread;
-    private Set<BridgeMessageListener> listeners;
+    private Set<BridgeMessageListener> bridgeMessageListeners;
+    private Set<BridgeEventListener> bridgeEventListeners;
+
 
     public DeviceClient(int port) {
         this.port = port;
-        this.listeners = ConcurrentHashMap.newKeySet();
+        this.bridgeMessageListeners = ConcurrentHashMap.newKeySet();
+        this.bridgeEventListeners = ConcurrentHashMap.newKeySet();
     }
 
     public void start() throws IOException {
@@ -43,7 +47,10 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
     }
 
     public void stop() {
-        //TODO
+        try {
+            socket.close();
+        } catch (IOException e) {
+        }
     }
 
     @Override
@@ -53,24 +60,46 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
 
     @Override
     public void registerMessageListener(BridgeMessageListener listener) {
-        listeners.add(listener);
+        bridgeMessageListeners.add(listener);
     }
 
     @Override
     public void removeMessageListener(BridgeMessageListener listener) {
-        listeners.remove(listener);
+        bridgeMessageListeners.remove(listener);
     }
 
     public void invokeOnMessage(PhysicalDevice device, BaseMessage message) {
         //TODO: Invoke in separate tasks
-        for(BridgeMessageListener listener : listeners) {
+        for(BridgeMessageListener listener : bridgeMessageListeners) {
             try {
                 listener.onMessage(device, message);
             } catch (IOException e) {
-                e.printStackTrace(); //TODO
+                e.printStackTrace();
+                //Some connection issues, they will be handled by the thread
             }
         }
     }
+
+    public void registerBridgeListener(BridgeEventListener listener) {
+        bridgeEventListeners.add(listener);
+    }
+
+    public void removeBridgeListener(BridgeEventListener listener) {
+        bridgeEventListeners.remove(listener);
+    }
+
+    public void invokeOnHostPaired(PairedHost host) {
+        for(BridgeEventListener listener : bridgeEventListeners) {
+            listener.onHostPaired(host);
+        }
+    }
+
+    public void invokeOnHostUnpaired(PairedHost host) {
+        for(BridgeEventListener listener : bridgeEventListeners) {
+            listener.onHostUnpaired(host);
+        }
+    }
+
 
     private class BridgeThread implements Runnable {
         private final Socket socket;
@@ -98,14 +127,12 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                     }
                 }
 
-                //TODO: Fire pairing event (to show the id of this device on the UI) Build.SERIAL
-
-                //out.flush() has to be done first to publish headers
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 out.flush();
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
                 PairedHost pairedHost = new PairedHost(deviceClient, in, out);
+                deviceClient.pairedHost = pairedHost;
 
                 //Send pairing request
                 Log.d(TAG, "Attempting to pair");
@@ -123,7 +150,9 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                //TODO: Fire disconnect event
+                if(deviceClient.pairedHost != null) {
+                    deviceClient.invokeOnHostUnpaired(deviceClient.pairedHost);
+                }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);

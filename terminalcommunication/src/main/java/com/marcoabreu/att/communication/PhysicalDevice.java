@@ -83,4 +83,8 @@ public class PhysicalDevice implements Closeable {
     public void setSerial(String serial) {
         this.serial = serial;
     }
+
+    public BridgeEndpoint getBridgeEndpoint() {
+        return bridgeEndpoint;
+    }
 }

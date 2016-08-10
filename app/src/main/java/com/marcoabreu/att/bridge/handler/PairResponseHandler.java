@@ -1,8 +1,9 @@
 package com.marcoabreu.att.bridge.handler;
 
 import android.util.Log;
-
 import com.marcoabreu.att.MainActivity;
+import com.marcoabreu.att.bridge.DeviceClient;
+import com.marcoabreu.att.bridge.PairedHost;
 import com.marcoabreu.att.communication.BridgeMessageListener;
 import com.marcoabreu.att.communication.PhysicalDevice;
 import com.marcoabreu.att.communication.message.BaseMessage;
@@ -20,6 +21,7 @@ public class PairResponseHandler implements BridgeMessageListener {
     @Override
     public void onMessage(PhysicalDevice device, BaseMessage message) throws IOException {
         if(message instanceof PairResponseMessage) {
+            DeviceClient deviceClient = (DeviceClient) device.getBridgeEndpoint();
             PairResponseMessage responseMessage = (PairResponseMessage)message;
 
             try {
@@ -29,8 +31,8 @@ public class PairResponseHandler implements BridgeMessageListener {
                 throw new RuntimeException("Error during loading of dynamic scripts", e);
             }
 
-            //TODO: Fire connected event (show we've successfully connected)
             Log.d(TAG, "Pairing successful");
+            deviceClient.invokeOnHostPaired((PairedHost) device);
         }
 
     }
