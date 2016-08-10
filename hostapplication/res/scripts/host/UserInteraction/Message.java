@@ -1,4 +1,4 @@
-package com.marcoabreu.att.device;
+package com.marcoabreu.att;
 
 import com.marcoabreu.att.profile.ScriptRuntimeContainer;
 
@@ -15,8 +15,8 @@ public class Message {
         JOptionPane op = new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE);
         JDialog dialog = op.createDialog("Android Terminal Test");
         dialog.setAlwaysOnTop(true);
-        dialog.setModalityType(Dialog.ModalityType.MODELESS);
-        dialog.setModal(true); //blocks execution
+        dialog.setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
+        //dialog.setModal(true); //blocks execution
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setVisible(true);
 

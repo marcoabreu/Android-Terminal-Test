@@ -17,17 +17,23 @@ public class ProfileExecutor implements AutoCloseable{
         this.profile = profile;
     }
 
-    public void start()  {
+    public void start() throws Exception {
         if(getRunState() == RunStatus.RUNNING) {
             throw new IllegalStateException("Profile is already being executed");
         }
 
-        Composite profileComposite = profile.convertLogic();
-        Composite hookedComposite = applyHooks(profileComposite);
+        try {
+            Composite profileComposite = profile.convertLogic();
+            Composite hookedComposite = applyHooks(profileComposite);
 
-        this.executor = new Executor(hookedComposite);
+            this.executor = new Executor(hookedComposite);
 
-        this.executor.start();
+            this.executor.start();
+        } catch (Exception e) {
+            throw new Exception("Error during profile conversion", e);
+        }
+
+
     }
 
     public void pause() {

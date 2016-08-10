@@ -93,7 +93,9 @@ public class Executor implements AutoCloseable {
             throw new IllegalStateException("Start the executor first");
         }
 
-        executingFuture.cancel(true);
+        if(executingFuture.cancel(true)) {
+            this.composite.stop();
+        };
     }
 
     /**

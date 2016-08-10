@@ -268,7 +268,11 @@ public class MainForm {
         }
 
         profileExecutor = new ProfileExecutor(loadedProfile);
-        profileExecutor.start();
+        try {
+            profileExecutor.start();
+        } catch (Exception e) {
+            showMessage("Error while starting profile", e);
+        }
     }
 
     private void stopProfileButtonHandler() {
@@ -397,7 +401,7 @@ public class MainForm {
         devicesTable = new JTable();
         scrollPane1.setViewportView(devicesTable);
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
+        panel3.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPane1.addTab("Profile", panel3);
         startButton = new JButton();
         startButton.setText("Start");
@@ -405,14 +409,16 @@ public class MainForm {
         loadProfileButton = new JButton();
         loadProfileButton.setText("Load profile");
         panel3.add(loadProfileButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        profileTree = new JTree();
-        panel3.add(profileTree, new GridConstraints(1, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
         pauseButton = new JButton();
         pauseButton.setText("Pause");
         panel3.add(pauseButton, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         stopButton = new JButton();
         stopButton.setText("Stop");
         panel3.add(stopButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane2 = new JScrollPane();
+        panel3.add(scrollPane2, new GridConstraints(1, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        profileTree = new JTree();
+        scrollPane2.setViewportView(profileTree);
     }
 
     /**
@@ -551,6 +557,7 @@ public class MainForm {
                         RunStatus runStatus = profileExecutor.getRunState();
 
                         if (profileExecutor.getLastExecutionException() != null) {
+                            LOG.error("Error during profile execution", profileExecutor.getLastExecutionException());
                             showMessage("Error during profile execution", profileExecutor.getLastExecutionException());
                             profileExecutor.stop();
                             profileExecutor = null;
