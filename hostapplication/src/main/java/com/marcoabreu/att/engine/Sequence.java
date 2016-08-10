@@ -1,10 +1,6 @@
 package com.marcoabreu.att.engine;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Composite which executes other composites in sequence
@@ -32,22 +28,20 @@ public class Sequence extends Composite {
     }
 
     @Override
-    public boolean run() {
+    public boolean run() throws Exception {
         while((runningChild = currentChildren.poll()) != null) {
             try (Executor currentExecutor = new Executor(runningChild)) {
                 currentExecutor.start();
 
-                while (currentExecutor.execute(100) == RunStatus.RUNNING) {
+                while (currentExecutor.execute(100, true) == RunStatus.RUNNING) {
                 }
 
                 //Child failed, this Sequence failed
-                if(currentExecutor.execute(0) == RunStatus.FAILURE) {
+                if(currentExecutor.execute(0, true) == RunStatus.FAILURE) {
                     return false;
                 }
             } catch (InterruptedException e) {
                 return false; //We couldn't finish our work and got interrupted
-            } catch(Exception e) {
-                throw new RuntimeException("Unexpected exception", e);
             }
 
             //All children have to succeed in order to let this run be successful

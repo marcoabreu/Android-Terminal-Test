@@ -1,12 +1,11 @@
 package com.marcoabreu.att.profile.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by AbreuM on 29.07.2016.
@@ -23,5 +22,9 @@ public abstract class AttGroupContainer extends AttComposite {
 
     public void addChild(AttComposite attComposite) {
         this.composites.add(attComposite);
+    }
+
+    public List<AttComposite> getComposites() {
+        return composites;
     }
 }

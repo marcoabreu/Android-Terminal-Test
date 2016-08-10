@@ -23,7 +23,7 @@ public class AttActionDevice extends AttAction {
     public Composite convertLogic() {
         final DeviceActionCompiler compiler;
         try {
-            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceBySynonym(targetDevice), this);
+            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceByAlias(targetDevice), this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -45,5 +45,10 @@ public class AttActionDevice extends AttAction {
 
     public void setTargetDevice(String targetDevice) {
         this.targetDevice = targetDevice;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s", this.targetDevice, this.getName());
     }
 }

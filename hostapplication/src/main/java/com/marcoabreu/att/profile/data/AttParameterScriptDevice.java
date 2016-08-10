@@ -33,7 +33,7 @@ public class AttParameterScriptDevice extends AttParameterScript {
     @Override
     public void init() {
         try {
-            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceBySynonym(targetDevice), this);
+            compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceByAlias(targetDevice), this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

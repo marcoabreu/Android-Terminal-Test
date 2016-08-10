@@ -39,4 +39,9 @@ public class AttActionHost extends AttAction {
             return true;
         });
     }
+
+    @Override
+    public String toString() {
+        return String.format("Host: %s", this.getName());
+    }
 }

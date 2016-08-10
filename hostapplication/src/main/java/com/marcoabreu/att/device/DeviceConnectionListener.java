@@ -36,4 +36,16 @@ public interface DeviceConnectionListener {
      * @param device
      */
     void onDeviceUnpaired(PairedDevice device);
+
+    /**
+     * Event thrown after a device has been assigned to an alias
+     * @param device
+     */
+    void onDeviceAssigned(PairedDevice device);
+
+    /**
+     * Event thrown upon removing the assignment of a device - it is still paired
+     * @param device
+     */
+    void onDeviceUnassigned(PairedDevice device);
 }

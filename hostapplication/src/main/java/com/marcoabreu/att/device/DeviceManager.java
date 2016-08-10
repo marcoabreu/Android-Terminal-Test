@@ -6,7 +6,10 @@ import se.vidstige.jadb.managers.Package;
 import se.vidstige.jadb.managers.PackageManager;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -39,7 +42,7 @@ public class DeviceManager {
 
     private DeviceManager() throws IOException {
         pairedDevices = ConcurrentHashMap.newKeySet();
-        assignedDevices = new HashMap<>();
+        assignedDevices = new ConcurrentHashMap<>();
         deviceServer = new DeviceServer(this, SERVER_PORT);
         deviceConnectionListeners = new HashSet<>();
     }
@@ -67,24 +70,38 @@ public class DeviceManager {
     }
 
     /**
-     * Gets a physical device by its synonym and asks the user to select a device in case it's not defined yet
-     * @param synonym synonym like "device1", "device2" etc
+     * Gets a physical device by its alias and asks the user to select a device in case it's not defined yet
+     * @param alias alias like "device1", "device2" etc
      * @return
      */
-    public PairedDevice getPairedDeviceBySynonym(String synonym) {
-        PairedDevice device = assignedDevices.get(synonym);
-
+    public PairedDevice getPairedDeviceByAlias(String alias) {
+        PairedDevice device = assignedDevices.get(alias);
         if(device == null) {
             //Device not defined, ask the user
-            //TODO: Ask the user
+            //TODO: Ask the user -> addDeviceAssignment
+            addDeviceAssignment(getPairedDevices().iterator().next(), alias);
 
-            assignedDevices.put(synonym, getPairedDevices().iterator().next());
 
-            return getPairedDeviceBySynonym(synonym); //Recursive in case user enters rubbish or closes the dialog. TODO: Reconsider this way
+            return getPairedDeviceByAlias(alias); //Recursive in case user enters rubbish or closes the dialog. TODO: Reconsider this way
         } else {
             return device;
         }
+    }
 
+    public synchronized void addDeviceAssignment(PairedDevice device, String alias) {
+        LOG.info("Assigning " + device.toString() + " to alias " + alias);
+        this.assignedDevices.put(alias, device);
+        invokeOnDeviceAssigned(device);
+    }
+
+    public void removeDeviceAssignment(String alias) {
+
+        PairedDevice device = this.assignedDevices.remove(alias);
+
+        if(device != null) {
+            LOG.info("Unassigned " + device.toString() + " from alias " + alias);
+            invokeOnDeviceUnassigned(device);
+        }
     }
 
     /**
@@ -105,24 +122,32 @@ public class DeviceManager {
         this.deviceConnectionListeners.add(listener);
     }
 
-    private void invokeOnDevicePaired(PairedDevice device) {
+    public void invokeOnDevicePaired(PairedDevice device) {
         deviceConnectionListeners.forEach(listener -> listener.onDevicePaired(device));
     }
 
-    private void invokeOnDeviceUnpaired(PairedDevice device) {
+    public void invokeOnDeviceUnpaired(PairedDevice device) {
         deviceConnectionListeners.forEach(listener -> listener.onDeviceUnpaired(device));
     }
 
-    private void invokeOnDeviceConnected(JadbDevice device) {
+    public void invokeOnDeviceConnected(JadbDevice device) {
         deviceConnectionListeners.forEach(listener -> listener.onDeviceConnected(device));
     }
 
-    private void invokeOnDeviceDisconnected(JadbDevice device) {
+    public void invokeOnDeviceDisconnected(JadbDevice device) {
         deviceConnectionListeners.forEach(listener -> listener.onDeviceDisconnected(device));
     }
 
-    private void invokeOnDeviceNeedPermission(JadbDevice device) {
+    public void invokeOnDeviceNeedPermission(JadbDevice device) {
         deviceConnectionListeners.forEach(listener -> listener.onDeviceNeedPermission(device));
+    }
+
+    public void invokeOnDeviceAssigned(PairedDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceAssigned(device));
+    }
+
+    public void invokeOnDeviceUnassigned(PairedDevice device) {
+        deviceConnectionListeners.forEach(listener -> listener.onDeviceUnassigned(device));
     }
 
     /**

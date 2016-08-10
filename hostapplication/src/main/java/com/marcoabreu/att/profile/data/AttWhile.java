@@ -19,4 +19,9 @@ public class AttWhile extends AttGroupContainer {
     public Composite convertLogic() {
         return new Repeat(composites.stream().map(composite -> composite.convertLogic()).collect(Collectors.toList()));
     }
+
+    @Override
+    public String toString() {
+        return String.format("While: %s", this.getName());
+    }
 }

@@ -1,12 +1,9 @@
 package com.marcoabreu.att.profile;
 
-import com.marcoabreu.att.engine.Action;
-import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.engine.Executor;
-import com.marcoabreu.att.engine.IfStatement;
-import com.marcoabreu.att.engine.RunStatus;
-import com.marcoabreu.att.engine.Sequence;
+import com.marcoabreu.att.engine.*;
 import com.marcoabreu.att.profile.data.AttProfile;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Service to execute a single profile run
@@ -20,7 +17,11 @@ public class ProfileExecutor implements AutoCloseable{
         this.profile = profile;
     }
 
-    public void start() {
+    public void start()  {
+        if(getRunState() == RunStatus.RUNNING) {
+            throw new IllegalStateException("Profile is already being executed");
+        }
+
         Composite profileComposite = profile.convertLogic();
         Composite hookedComposite = applyHooks(profileComposite);
 
@@ -40,7 +41,18 @@ public class ProfileExecutor implements AutoCloseable{
     }
 
     public RunStatus getRunState() {
+        if(this.executor == null) {
+            return RunStatus.FAILURE;
+        }
         return this.executor.execute(0);
+    }
+
+    public ExecutionException getLastExecutionException() {
+        if(this.executor == null) {
+            return null;
+        }
+
+        return this.executor.getLastExecutionException();
     }
 
     /**

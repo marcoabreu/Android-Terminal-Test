@@ -69,7 +69,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
             try {
                 listener.onMessage(device, message);
             } catch (IOException e) {
-                e.printStackTrace(); //TODO
+                LOG.error("Exception during message invokation", e);
             }
         }
     }
@@ -107,7 +107,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
                     pairedDevice.setMessageThread(messageHandlerThread);
                     messageHandlerThread.start();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOG.error("Exception during pairing acceptance procedure", e);
                 }
             }
         }
@@ -133,7 +133,8 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
                     deviceServer.invokeOnMessage(device, message);
                 }
             } catch (IOException ex) {
-                //TODO: Notify of disconnection
+                LOG.error("Device " + pairedDevice.getSerial() + " disconnected" , ex);
+                DeviceManager.getInstance().invokeOnDeviceUnpaired(pairedDevice);
             }
         }
     }

@@ -6,11 +6,19 @@ import com.marcoabreu.att.device.CompilerException;
 import com.marcoabreu.att.device.DeviceConnectionListener;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.device.PairedDevice;
+import com.marcoabreu.att.engine.RunStatus;
 import com.marcoabreu.att.host.JavaInterpreter;
 import com.marcoabreu.att.host.handler.DataStorageGetHandler;
 import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
 import com.marcoabreu.att.host.handler.PairRequestHandler;
+import com.marcoabreu.att.profile.ProfileExecutor;
+import com.marcoabreu.att.profile.ProfileMarshaller;
+import com.marcoabreu.att.profile.data.AttComposite;
+import com.marcoabreu.att.profile.data.AttGroupContainer;
+import com.marcoabreu.att.profile.data.AttProfile;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import se.vidstige.jadb.JadbDevice;
 import se.vidstige.jadb.JadbException;
 
@@ -18,9 +26,13 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,18 +46,23 @@ import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.*;
  * Created by AbreuM on 08.08.2016.
  */
 public class MainForm {
+    private static final Logger LOG = LogManager.getLogger();
+    private static final int PROFILE_WATCHER_UPDATE_MS = 200;
     private final JFrame mainFrame;
     private JTabbedPane tabbedPane1;
     private JPanel panel1;
     private JButton pairButton;
     private JButton unassignButton;
-    private JButton assignButton;
     private JTable devicesTable;
     private JButton pauseButton;
     private JButton startButton;
     private JButton stopButton;
     private JButton loadProfileButton;
     private JTree profileTree;
+
+    private ProfileExecutor profileExecutor;
+    private AttProfile loadedProfile;
+    private Thread profileExecutorWatcherThread;
 
     public MainForm() {
         mainFrame = new JFrame("Android Terminal Test");
@@ -54,60 +71,57 @@ public class MainForm {
         mainFrame.pack();
 
         this.pairButton.setEnabled(false);
-        this.assignButton.setEnabled(false);
         this.unassignButton.setEnabled(false);
+
+        profileExecutorWatcherThread = new Thread(new ProfileExecutorWatcherThread());
+        profileExecutorWatcherThread.setDaemon(true);
+        profileExecutorWatcherThread.start();
 
         loadProfileButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                loadProfileHandler();
+                loadProfileButtonHandler();
             }
         });
         startButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                startProfileHandler();
+                startProfileButtonHandler();
             }
         });
         stopButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                stopProfileHandler();
+                stopProfileButtonHandler();
             }
         });
         pauseButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                pauseProfileHandler();
+                pauseProfileButtonHandler();
             }
         });
         pairButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                pairDeviceHandler();
-            }
-        });
-        assignButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                assignDeviceHandler();
+                pairDeviceButtonHandler();
             }
         });
         unassignButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                unassignDeviceHandler();
+                unassignDeviceButtonHandler();
             }
         });
         devicesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                selectDeviceHandler();
+                selectedDeviceChangeHandler();
             }
         });
 
@@ -116,8 +130,7 @@ public class MainForm {
         try {
             init();
         } catch (Exception e) {
-            //TODO handle exception
-            e.printStackTrace();
+            showMessage("Error during initialization", e);
         }
 
     }
@@ -156,6 +169,16 @@ public class MainForm {
             public void onDeviceUnpaired(PairedDevice device) {
                 SwingUtilities.invokeLater(() -> deviceUnpairedHandler(device));
             }
+
+            @Override
+            public void onDeviceAssigned(PairedDevice device) {
+                SwingUtilities.invokeLater(() -> deviceAssignedHandler(device));
+            }
+
+            @Override
+            public void onDeviceUnassigned(PairedDevice device) {
+                SwingUtilities.invokeLater(() -> deviceUnassignedHandler(device));
+            }
         });
 
         deviceManager.start();
@@ -165,57 +188,129 @@ public class MainForm {
         mainFrame.setVisible(true);
     }
 
+    private void showMessage(String message) {
+        JOptionPane op = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = op.createDialog("Android Terminal Test");
+        dialog.setAlwaysOnTop(false);
+        dialog.setModal(false);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
+    }
+
+    private void showMessage(String message, Throwable throwable) {
+        StringBuilder resultingMessage = new StringBuilder();
+        resultingMessage.append(message + "\n");
+        resultingMessage.append("Exception:\n");
+
+        Throwable nestedThrowable = throwable;
+
+        while (nestedThrowable != null) {
+            resultingMessage.append("\t" + nestedThrowable.toString() + "\n");
+            nestedThrowable = nestedThrowable.getCause();
+        }
+
+        showMessage(resultingMessage.toString());
+    }
+
     private Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> getSelectedDevice() {
         DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
         Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = model.getDeviceAt(devicesTable.getSelectedRow());
         return deviceData;
     }
 
-    private void loadProfileHandler() {
-        //TODO Load profile dialog
-    }
+    private void loadProfileButtonHandler() {
+        JFileChooser fileChooser = new JFileChooser();
+        int retVal = fileChooser.showOpenDialog(null);
 
-    private void startProfileHandler() {
-        //TODO Start profile engine
-    }
+        if (retVal == JFileChooser.APPROVE_OPTION) {
+            File selectedProfile = fileChooser.getSelectedFile();
 
-    private void stopProfileHandler() {
-        //TODO Stop profile engine
-    }
+            try {
+                loadedProfile = ProfileMarshaller.readProfile(selectedProfile);
 
-    private void pauseProfileHandler() {
-        //TODO Pause profile engine
-    }
+                DefaultMutableTreeNode headNode = new DefaultMutableTreeNode("Profile " + loadedProfile.getIdentifier());
+                for (AttComposite attCompositeChild : loadedProfile.getComposites()) {
+                    generateProfileTreeElement(headNode, attCompositeChild);
+                }
 
-    private void pairDeviceHandler() {
-        Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
-        try {
-            DeviceManager.getInstance().startPairing(deviceData.getLeft());
-        } catch (IOException e) { //TODO proper exception handling
-            e.printStackTrace();
-        } catch (JadbException e) {
-            e.printStackTrace();
+                DefaultTreeModel model = (DefaultTreeModel) profileTree.getModel();
+                model.setRoot(headNode);
+
+            } catch (JAXBException e) {
+                showMessage("Unable to read profile", e);
+            }
+
+
         }
     }
 
-    private void assignDeviceHandler() {
-        //TODO assign device dialog
+    private void generateProfileTreeElement(DefaultMutableTreeNode parent, AttComposite attComposite) {
+        DefaultMutableTreeNode nodeRoot = new DefaultMutableTreeNode(attComposite.toString());
+        parent.add(nodeRoot);
+
+        if (attComposite instanceof AttGroupContainer) {
+            AttGroupContainer attGroupContainer = (AttGroupContainer) attComposite;
+            for (AttComposite attChild : attGroupContainer.getComposites()) {
+                generateProfileTreeElement(nodeRoot, attChild);
+            }
+        }
     }
 
-    private void unassignDeviceHandler() {
-        //TODO unassign device
+    private void startProfileButtonHandler() {
+        if (loadedProfile == null) {
+            showMessage("Select a profile first");
+            return;
+        }
+
+        if (profileExecutor != null && profileExecutor.getRunState() == RunStatus.RUNNING) {
+            showMessage("Profile execution is already running, please stop it first");
+            return;
+        }
+
+        profileExecutor = new ProfileExecutor(loadedProfile);
+        profileExecutor.start();
     }
 
-    private void selectDeviceHandler() {
+    private void stopProfileButtonHandler() {
+        if (profileExecutor != null) {
+            profileExecutor.stop();
+        }
+    }
+
+    private void pauseProfileButtonHandler() {
+        if (profileExecutor != null) {
+            profileExecutor.pause();
+        }
+    }
+
+    private void pairDeviceButtonHandler() {
+        Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
+        try {
+            DeviceManager.getInstance().startPairing(deviceData.getLeft());
+        } catch (IOException e) {
+            showMessage("Error communicating to device over adb", e);
+            e.printStackTrace();
+        } catch (JadbException e) {
+            showMessage("Error connecting to device over adb", e);
+        }
+    }
+
+    private void unassignDeviceButtonHandler() {
+        Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
+
+        if (deviceData != null) {
+            DeviceManager.getInstance().removeDeviceAssignment(deviceData.getRight().getAlias());
+        }
+    }
+
+    private void selectedDeviceChangeHandler() {
         Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
 
         if (deviceData != null) {
             this.pairButton.setEnabled(deviceData.getRight().getConnectionStatus() == UNPAIRED);
-            this.assignButton.setEnabled(deviceData.getRight().getConnectionStatus() == PAIRED);
             this.unassignButton.setEnabled(deviceData.getRight().getConnectionStatus() == ASSIGNED);
         } else {
             this.pairButton.setEnabled(false);
-            this.assignButton.setEnabled(false);
             this.unassignButton.setEnabled(false);
         }
     }
@@ -255,6 +350,20 @@ public class MainForm {
         model.fireTableDataChanged();
     }
 
+    private void deviceAssignedHandler(PairedDevice device) {
+        DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
+        DeviceTableItemModel.DeviceTableData data = model.getDeviceData(device.getJadbDevice());
+        data.setConnectionStatus(ASSIGNED);
+        model.fireTableDataChanged();
+    }
+
+    private void deviceUnassignedHandler(PairedDevice device) {
+        DeviceTableItemModel model = (DeviceTableItemModel) devicesTable.getModel();
+        DeviceTableItemModel.DeviceTableData data = model.getDeviceData(device.getJadbDevice());
+        data.setConnectionStatus(PAIRED);
+        model.fireTableDataChanged();
+    }
+
     {
 // GUI initializer generated by IntelliJ IDEA GUI Designer
 // >>> IMPORTANT!! <<<
@@ -275,19 +384,16 @@ public class MainForm {
         tabbedPane1 = new JTabbedPane();
         panel1.add(tabbedPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPane1.addTab("Devices", panel2);
-        assignButton = new JButton();
-        assignButton.setText("Assign");
-        panel2.add(assignButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         unassignButton = new JButton();
         unassignButton.setText("Unassign");
-        panel2.add(unassignButton, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(unassignButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pairButton = new JButton();
         pairButton.setText("Pair");
         panel2.add(pairButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel2.add(scrollPane1, new GridConstraints(0, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel2.add(scrollPane1, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         devicesTable = new JTable();
         scrollPane1.setViewportView(devicesTable);
         final JPanel panel3 = new JPanel();
@@ -434,6 +540,32 @@ public class MainForm {
         PAIRED,
         ASSIGNED,
         PERMISSION_REQUIRED
+    }
+
+    private class ProfileExecutorWatcherThread implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                if (profileExecutor != null) {
+                    try {
+                        RunStatus runStatus = profileExecutor.getRunState();
+
+                        if (profileExecutor.getLastExecutionException() != null) {
+                            showMessage("Error during profile execution", profileExecutor.getLastExecutionException());
+                            profileExecutor.stop();
+                            profileExecutor = null;
+                        }
+                    } catch (Exception ex) {
+                        showMessage("Unknown error in profile watcher", ex);
+                    }
+                }
+
+                try {
+                    Thread.sleep(PROFILE_WATCHER_UPDATE_MS);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
     }
 
 }

@@ -18,7 +18,7 @@ public abstract class Composite implements Callable<RunStatus> {
      * Execute composite until it has reached a final state
      * @return True if run successful, false if failed
      */
-    protected abstract boolean run() ;
+    protected abstract boolean run() throws Exception;
 
     /**
      * Clean up after an execution if composite if composite started successfully

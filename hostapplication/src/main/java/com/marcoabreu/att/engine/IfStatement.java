@@ -43,7 +43,7 @@ public class IfStatement extends Composite {
     }
 
     @Override
-    public boolean run() {
+    public boolean run() throws Exception {
         //Nothing to do
         if(childToExecute == null) {
             return true;
@@ -51,11 +51,9 @@ public class IfStatement extends Composite {
 
         try (Executor executor = new Executor(childToExecute)) {
             executor.start();
-            while(executor.execute(100) == RunStatus.RUNNING) {
+            while (executor.execute(100, true) == RunStatus.RUNNING) {
             }
-            return executor.execute(0) == RunStatus.SUCCESS;
-        } catch (Exception ex) {
-            throw new RuntimeException("Unexpected exception", ex);
+            return executor.execute(0, true) == RunStatus.SUCCESS;
         }
     }
 

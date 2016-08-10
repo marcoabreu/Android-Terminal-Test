@@ -45,4 +45,9 @@ public class AttSleep extends AttComposite {
     public void setDurationMs(long durationMs) {
         this.durationMs = durationMs;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Sleep %ds: %s", this.getDurationMs() / 1000, this.getName());
+    }
 }
