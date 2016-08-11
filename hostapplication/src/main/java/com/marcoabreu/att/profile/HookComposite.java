@@ -31,4 +31,11 @@ public class HookComposite extends Sequence {
 
         this.profileExecutor.invokeEndComposite(hookedComposite);
     }
+
+    @Override
+    protected void onTickChild(Composite childComposite) {
+        super.onTickChild(childComposite);
+
+        this.profileExecutor.invokeTickComposite(hookedComposite);
+    }
 }

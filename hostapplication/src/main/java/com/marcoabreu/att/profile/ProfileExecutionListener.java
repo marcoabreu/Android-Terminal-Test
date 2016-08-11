@@ -21,4 +21,11 @@ public interface ProfileExecutionListener {
      * @param engineComposite
      */
     void onEndComposite(AttComposite profileComposite, Composite engineComposite);
+
+    /**
+     * Event called every time the composite is ticked - this may happen very frequently
+     * @param profileComposite
+     * @param engineComposite
+     */
+    void onTickComposite(AttComposite profileComposite, Composite engineComposite);
 }

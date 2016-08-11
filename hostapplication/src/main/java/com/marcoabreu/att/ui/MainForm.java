@@ -7,11 +7,11 @@ import com.marcoabreu.att.device.DeviceConnectionListener;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.device.PairedDevice;
 import com.marcoabreu.att.engine.Composite;
-import com.marcoabreu.att.engine.RunStatus;
 import com.marcoabreu.att.host.JavaInterpreter;
 import com.marcoabreu.att.host.handler.DataStorageGetHandler;
 import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
 import com.marcoabreu.att.host.handler.PairRequestHandler;
+import com.marcoabreu.att.profile.ActionTimeoutException;
 import com.marcoabreu.att.profile.ProfileExecutionListener;
 import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
@@ -295,7 +295,7 @@ public class MainForm {
             return;
         }
 
-        if (profileExecutor != null && profileExecutor.getRunState() == RunStatus.RUNNING) {
+        if (profileExecutor != null && profileExecutor.getExecutionStatus().isRunning()) {
             showMessage("Profile execution is already running, please stop it first");
             return;
         }
@@ -311,6 +311,10 @@ public class MainForm {
             @Override
             public void onEndComposite(AttComposite profileComposite, Composite engineComposite) {
                 SwingUtilities.invokeLater(() -> onEndCompositeHandler(profileComposite, engineComposite));
+            }
+
+            @Override
+            public void onTickComposite(AttComposite profileComposite, Composite engineComposite) {
             }
         });
 
@@ -352,7 +356,7 @@ public class MainForm {
 
     private void pauseProfileButtonHandler() {
         if (profileExecutor != null) {
-            profileExecutor.pause();
+            profileExecutor.togglePause();
         }
     }
 
@@ -635,12 +639,19 @@ public class MainForm {
             while (true) {
                 if (profileExecutor != null) {
                     try {
-                        RunStatus runStatus = profileExecutor.getRunState();
+                        ProfileExecutor.ExecutionStatus executionStatus = profileExecutor.getExecutionStatus();
 
                         if (profileExecutor.getLastExecutionException() != null) {
-                            LOG.error("Error during profile execution", profileExecutor.getLastExecutionException());
-                            showMessage("Error during profile execution", profileExecutor.getLastExecutionException());
                             profileExecutor.stop();
+
+                            if(extractRootCause(profileExecutor.getLastExecutionException()) instanceof ActionTimeoutException) {
+                                LOG.error("Action timed out");
+                                showMessage("The execution of the current action exceeded the maximum allowed run time");
+                            } else {
+                                LOG.error("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
+                                showMessage("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
+                            }
+
                             profileExecutor = null;
                         }
                     } catch (Exception ex) {
@@ -653,6 +664,14 @@ public class MainForm {
                 } catch (InterruptedException e) {
                 }
             }
+        }
+
+        private Throwable extractRootCause(Throwable throwable) {
+            if(throwable.getCause() == null) {
+                return throwable;
+            }
+
+            return extractRootCause(throwable.getCause());
         }
     }
 

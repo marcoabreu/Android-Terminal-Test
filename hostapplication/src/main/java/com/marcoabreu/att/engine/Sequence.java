@@ -34,6 +34,7 @@ public class Sequence extends Composite {
                 currentExecutor.start();
 
                 while (currentExecutor.execute(100, true) == RunStatus.RUNNING) {
+                    onTickChild(runningChild);
                 }
 
                 //Child failed, this Sequence failed
@@ -49,6 +50,13 @@ public class Sequence extends Composite {
         }
 
         return true; //All children executed, everything went well
+    }
+
+    /**
+     * Called every time a child is ticked
+     * @param childComposite
+     */
+    protected void onTickChild(Composite childComposite) {
     }
 
     @Override
