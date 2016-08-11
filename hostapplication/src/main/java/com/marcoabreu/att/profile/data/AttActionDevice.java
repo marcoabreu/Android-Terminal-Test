@@ -4,6 +4,7 @@ import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
 import com.marcoabreu.att.host.DeviceActionCompiler;
+import com.marcoabreu.att.profile.ProfileExecutor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -20,7 +21,7 @@ public class AttActionDevice extends AttAction {
     private String targetDevice;
 
     @Override
-    public Composite convertLogic() {
+    public Composite convertLogic(ProfileExecutor profileExecutor) {
         final DeviceActionCompiler compiler;
         try {
             compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceByAlias(targetDevice), this);
@@ -28,7 +29,7 @@ public class AttActionDevice extends AttAction {
             throw new RuntimeException(ex);
         }
 
-        return new Action(() -> {
+        return profileExecutor.registerComposite(this, new Action(() -> {
             try {
                 compiler.executeVoid();
             } catch (Exception ex) {
@@ -36,7 +37,7 @@ public class AttActionDevice extends AttAction {
             }
 
             return true;
-        });
+        }));
     }
 
     public String getTargetDevice() {

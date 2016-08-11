@@ -1,8 +1,18 @@
 package com.marcoabreu.att.profile;
 
-import com.marcoabreu.att.engine.*;
+import com.marcoabreu.att.engine.Composite;
+import com.marcoabreu.att.engine.Executor;
+import com.marcoabreu.att.engine.IfStatement;
+import com.marcoabreu.att.engine.RunStatus;
+import com.marcoabreu.att.engine.Sequence;
+import com.marcoabreu.att.profile.data.AttComposite;
 import com.marcoabreu.att.profile.data.AttProfile;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -12,9 +22,13 @@ import java.util.concurrent.ExecutionException;
 public class ProfileExecutor implements AutoCloseable{
     private final AttProfile profile;
     private Executor executor;
+    private Set<ProfileExecutionListener> listeners;
+    private Map<Composite, AttComposite> compositeMapping;
 
     public ProfileExecutor(AttProfile profile) {
         this.profile = profile;
+        this.compositeMapping = new HashMap<>();
+        listeners = new HashSet<>();
     }
 
     public void start() throws Exception {
@@ -23,7 +37,7 @@ public class ProfileExecutor implements AutoCloseable{
         }
 
         try {
-            Composite profileComposite = profile.convertLogic();
+            Composite profileComposite = profile.convertLogic(this);
             Composite hookedComposite = applyHooks(profileComposite);
 
             this.executor = new Executor(hookedComposite);
@@ -32,8 +46,49 @@ public class ProfileExecutor implements AutoCloseable{
         } catch (Exception e) {
             throw new Exception("Error during profile conversion", e);
         }
+    }
+
+    public void addListener(ProfileExecutionListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(ProfileExecutionListener listener) {
+        listeners.remove(listener);
+    }
+
+    private AttComposite retrieveProfileComposite(Composite logicComposite) {
+        AttComposite profileComposite = compositeMapping.get(logicComposite);
+
+        if(profileComposite == null) {
+            throw new NoSuchElementException("Composite " + logicComposite.toString() + " not mapped in profile executor");
+        }
+
+        return profileComposite;
+    }
+
+    public void invokeStartComposite(Composite logicComposite) {
+        AttComposite profileComposite = retrieveProfileComposite(logicComposite);
+
+        listeners.stream().forEach(listener -> listener.onStartComposite(profileComposite, logicComposite));
+    }
+
+    public void invokeEndComposite(Composite logicComposite) {
+        AttComposite profileComposite = retrieveProfileComposite(logicComposite);
+
+        listeners.stream().forEach(listener -> listener.onEndComposite(profileComposite, logicComposite));
+    }
 
 
+    /**
+     * Register a converted composite to allow state-tracking during execution
+     * @param attComposite Input profile
+     * @param resultingComposite Output logic
+     * @return Returns resultingComposite for convenience use
+     */
+    public Composite registerComposite(AttComposite attComposite, Composite resultingComposite) {
+        this.compositeMapping.put(resultingComposite, attComposite);
+
+        return resultingComposite;
     }
 
     public void pause() {
@@ -91,14 +146,7 @@ public class ProfileExecutor implements AutoCloseable{
             }
         }
 
-        return new Sequence(
-                //TODO: Start-Action-Hook
-                new Action(() -> {
-                    System.out.println("Start composite");
-                    return true;
-                }),
-                baseComposite
-        );
+        return new HookComposite(this, baseComposite);
     }
 
     @Override

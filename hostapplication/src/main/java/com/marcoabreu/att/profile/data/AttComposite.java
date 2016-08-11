@@ -1,6 +1,7 @@
 package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.engine.Composite;
+import com.marcoabreu.att.profile.ProfileExecutor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -14,7 +15,7 @@ public abstract class AttComposite {
     @XmlAttribute(name = "name")
     private String name;
 
-    public abstract Composite convertLogic();
+    public abstract Composite convertLogic(ProfileExecutor profileExecutor);
 
     public String getName() {
         return name;

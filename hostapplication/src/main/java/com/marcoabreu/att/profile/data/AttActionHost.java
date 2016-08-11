@@ -3,6 +3,7 @@ package com.marcoabreu.att.profile.data;
 import com.marcoabreu.att.engine.Action;
 import com.marcoabreu.att.engine.Composite;
 import com.marcoabreu.att.host.HostActionCompiler;
+import com.marcoabreu.att.profile.ProfileExecutor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -21,7 +22,7 @@ public class AttActionHost extends AttAction {
     }
 
     @Override
-    public Composite convertLogic() {
+    public Composite convertLogic(ProfileExecutor profileExecutor) {
         final HostActionCompiler compiler;
         try {
             compiler = new HostActionCompiler(this);
@@ -29,7 +30,7 @@ public class AttActionHost extends AttAction {
             throw new RuntimeException(ex);
         }
 
-        return new Action(() -> {
+        return profileExecutor.registerComposite(this, new Action(() -> {
             try {
                 compiler.executeVoid();
             } catch (Exception ex) {
@@ -37,7 +38,7 @@ public class AttActionHost extends AttAction {
             }
 
             return true;
-        });
+        }));
     }
 
     @Override

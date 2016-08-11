@@ -2,6 +2,7 @@ package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.engine.Composite;
 import com.marcoabreu.att.engine.Sequence;
+import com.marcoabreu.att.profile.ProfileExecutor;
 
 import java.util.stream.Collectors;
 
@@ -27,8 +28,8 @@ public class AttProfile extends AttGroupContainer {
     private String description;
 
     @Override
-    public Composite convertLogic() {
-        return new Sequence(composites.stream().map(composite -> composite.convertLogic()).collect(Collectors.toList()));
+    public Composite convertLogic(ProfileExecutor profileExecutor) {
+        return profileExecutor.registerComposite(this, new Sequence(composites.stream().map(composite -> composite.convertLogic(profileExecutor)).collect(Collectors.toList())));
     }
 
     public String getIdentifier() {

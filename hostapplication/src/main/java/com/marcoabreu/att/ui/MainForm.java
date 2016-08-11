@@ -6,30 +6,27 @@ import com.marcoabreu.att.device.CompilerException;
 import com.marcoabreu.att.device.DeviceConnectionListener;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.device.PairedDevice;
+import com.marcoabreu.att.engine.Composite;
 import com.marcoabreu.att.engine.RunStatus;
 import com.marcoabreu.att.host.JavaInterpreter;
 import com.marcoabreu.att.host.handler.DataStorageGetHandler;
 import com.marcoabreu.att.host.handler.DataStorageSaveHandler;
 import com.marcoabreu.att.host.handler.PairRequestHandler;
+import com.marcoabreu.att.profile.ProfileExecutionListener;
 import com.marcoabreu.att.profile.ProfileExecutor;
 import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttComposite;
 import com.marcoabreu.att.profile.data.AttGroupContainer;
 import com.marcoabreu.att.profile.data.AttProfile;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -40,7 +37,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.xml.bind.JAXBException;
+
+import se.vidstige.jadb.JadbDevice;
+import se.vidstige.jadb.JadbException;
+
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.ASSIGNED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PAIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PERMISSION_REQUIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.UNPAIRED;
 
 /**
  * Created by AbreuM on 08.08.2016.
@@ -60,9 +84,12 @@ public class MainForm {
     private JButton loadProfileButton;
     private JTree profileTree;
 
+    private ActiveProfileCompositeTreeCellRenderer treeRenderer;
     private ProfileExecutor profileExecutor;
     private AttProfile loadedProfile;
     private Thread profileExecutorWatcherThread;
+    private Map<AttComposite, DefaultMutableTreeNode> profileTreeMapping;
+
 
     public MainForm() {
         mainFrame = new JFrame("Android Terminal Test");
@@ -125,7 +152,11 @@ public class MainForm {
             }
         });
 
+        profileTreeMapping = new HashMap<>();
         devicesTable.setModel(new DeviceTableItemModel());
+        treeRenderer = new ActiveProfileCompositeTreeCellRenderer(profileTree.getCellRenderer());
+        profileTree.setCellRenderer(treeRenderer);
+
 
         try {
             init();
@@ -228,6 +259,7 @@ public class MainForm {
             try {
                 loadedProfile = ProfileMarshaller.readProfile(selectedProfile);
 
+                profileTreeMapping.clear();
                 DefaultMutableTreeNode headNode = new DefaultMutableTreeNode("Profile " + loadedProfile.getIdentifier());
                 for (AttComposite attCompositeChild : loadedProfile.getComposites()) {
                     generateProfileTreeElement(headNode, attCompositeChild);
@@ -246,6 +278,7 @@ public class MainForm {
 
     private void generateProfileTreeElement(DefaultMutableTreeNode parent, AttComposite attComposite) {
         DefaultMutableTreeNode nodeRoot = new DefaultMutableTreeNode(attComposite.toString());
+        profileTreeMapping.put(attComposite, nodeRoot);
         parent.add(nodeRoot);
 
         if (attComposite instanceof AttGroupContainer) {
@@ -268,10 +301,46 @@ public class MainForm {
         }
 
         profileExecutor = new ProfileExecutor(loadedProfile);
+
+        profileExecutor.addListener(new ProfileExecutionListener() {
+            @Override
+            public void onStartComposite(AttComposite profileComposite, Composite engineComposite) {
+                SwingUtilities.invokeLater(() -> onStartCompositeHandler(profileComposite, engineComposite));
+            }
+
+            @Override
+            public void onEndComposite(AttComposite profileComposite, Composite engineComposite) {
+                SwingUtilities.invokeLater(() -> onEndCompositeHandler(profileComposite, engineComposite));
+            }
+        });
+
         try {
             profileExecutor.start();
         } catch (Exception e) {
             showMessage("Error while starting profile", e);
+        }
+    }
+
+    private void onStartCompositeHandler(AttComposite profileComposite, Composite engineComposite) {
+        if(profileComposite == loadedProfile) {
+            LOG.info("Starting profile execution");
+        }
+
+        treeRenderer.setActiveNode(profileTreeMapping.get(profileComposite));
+        profileTree.repaint();
+        //DefaultTreeModel model = (DefaultTreeModel) profileTree.getModel();
+        //model.cha
+
+
+    }
+
+    private void onEndCompositeHandler(AttComposite profileComposite, Composite engineComposite) {
+        treeRenderer.setActiveNode(null);
+        profileTree.repaint();
+
+        //showMessage("End composite " + profileComposite.getName());
+        if(profileComposite == loadedProfile) {
+            LOG.info("Profile execution finished");
         }
     }
 
@@ -584,6 +653,38 @@ public class MainForm {
                 } catch (InterruptedException e) {
                 }
             }
+        }
+    }
+
+    private class ActiveProfileCompositeTreeCellRenderer extends DefaultTreeCellRenderer {
+        private final TreeCellRenderer renderer;
+        private DefaultMutableTreeNode activeTreeNode;
+        public ActiveProfileCompositeTreeCellRenderer(TreeCellRenderer renderer) {
+            this.renderer = renderer;
+        }
+        @Override public Component getTreeCellRendererComponent(
+                JTree tree, Object value, boolean isSelected, boolean expanded,
+                boolean leaf, int row, boolean hasFocus) {
+            JComponent c = (JComponent)renderer.getTreeCellRendererComponent(
+                    tree, value, isSelected, expanded, leaf, row, hasFocus);
+            if (isSelected) {
+                c.setOpaque(false);
+                c.setForeground(getTextSelectionColor());
+            } else {
+                c.setOpaque(true);
+                if (activeTreeNode!=null && value.equals(activeTreeNode)) {
+                    c.setForeground(getTextNonSelectionColor());
+                    c.setBackground(Color.YELLOW);
+                } else {
+                    c.setForeground(getTextNonSelectionColor());
+                    c.setBackground(getBackgroundNonSelectionColor());
+                }
+            }
+            return c;
+        }
+
+        public void setActiveNode(DefaultMutableTreeNode treeNode) {
+            this.activeTreeNode = treeNode;
         }
     }
 
