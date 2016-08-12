@@ -198,7 +198,7 @@ public class ProfileExecutor implements AutoCloseable{
      * @return
      */
     public long getElapsedActionTimeSeconds() {
-        return profileExecutionFlowWatcher.getElapsedTimeNano() / 1000000;
+        return profileExecutionFlowWatcher.getElapsedTimeNano() / 1000000000;
     }
 
     /**
@@ -206,14 +206,26 @@ public class ProfileExecutor implements AutoCloseable{
      * @return
      */
     public long getTimeoutActionTimeSeconds() {
-        return profileExecutionFlowWatcher.getTimeoutNano() / 1000000;
+        long timeout = profileExecutionFlowWatcher.getTimeoutNano();
+        if(timeout != Long.MAX_VALUE) {
+            return timeout / 1000000000;
+        } else {
+            return Long.MAX_VALUE;
+        }
+
     }
 
     /**
      * Return time in seconds until the execution times out. 0 means it will not timeout
      */
     public long getTimeoutTimeLeftSeconds() {
-        return profileExecutionFlowWatcher.getTimeLeftNano() / 1000000;
+        long timeLeft = profileExecutionFlowWatcher.getTimeLeftNano();
+
+        if(timeLeft != Long.MAX_VALUE) {
+            return timeLeft / 1000000000;
+        } else {
+            return Long.MAX_VALUE;
+        }
     }
 
 
@@ -277,7 +289,7 @@ public class ProfileExecutor implements AutoCloseable{
             this.pauseRequested = false;
             this.pauseWaiting = false;
             this.stopWatch.reset();
-            this.timeoutNano = 0;
+            this.timeoutNano = Long.MAX_VALUE;
         }
 
         public void togglePause() {
@@ -288,7 +300,7 @@ public class ProfileExecutor implements AutoCloseable{
         public void onStartComposite(AttComposite profileComposite, Composite engineComposite) {
             waitIfPaused();
 
-            timeoutNano = 0;
+            timeoutNano = Long.MAX_VALUE;
             //Start execution timer if action has a timeout
             if(profileComposite instanceof AttAction) {
                 AttAction attAction = (AttAction) profileComposite;
@@ -313,7 +325,7 @@ public class ProfileExecutor implements AutoCloseable{
         @Override
         public void onTickComposite(AttComposite profileComposite, Composite engineComposite) {
             //Check if we got a timer running and break execution if timeout reached
-            if(timeoutNano > 0 && stopWatch.isStarted()) {
+            if(timeoutNano != Long.MAX_VALUE && stopWatch.isStarted()) {
                 if(stopWatch.getNanoTime() >= timeoutNano) {
                     stopWatch.stop();
                     throw new ActionTimeoutException("Maximum execution time exceeded");
@@ -354,13 +366,20 @@ public class ProfileExecutor implements AutoCloseable{
             return this.stopWatch.getNanoTime();
         }
 
+        /**
+         * Long.MAX_VALUE if no timeout, time in nanoseconds otherwise
+         */
         public long getTimeoutNano() {
             return timeoutNano;
         }
 
+        /**
+         * Long.MAX_VALUE if no time left, time in nanoseconds otherwise
+         * @return
+         */
         public long getTimeLeftNano() {
-            if(getTimeoutNano() == 0) {
-                return 0;
+            if(getTimeoutNano() == Long.MAX_VALUE) {
+                return Long.MAX_VALUE;
             }
 
             return getTimeoutNano() - getElapsedTimeNano();

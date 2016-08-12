@@ -18,15 +18,22 @@ import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttComposite;
 import com.marcoabreu.att.profile.data.AttGroupContainer;
 import com.marcoabreu.att.profile.data.AttProfile;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import se.vidstige.jadb.JadbDevice;
+import se.vidstige.jadb.JadbException;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.xml.bind.JAXBException;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -37,34 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.xml.bind.JAXBException;
-
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
-
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.ASSIGNED;
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PAIRED;
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PERMISSION_REQUIRED;
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.UNPAIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.*;
 
 /**
  * Created by AbreuM on 08.08.2016.
@@ -83,6 +63,9 @@ public class MainForm {
     private JButton stopButton;
     private JButton loadProfileButton;
     private JTree profileTree;
+    private JLabel labelStatus;
+    private JLabel labelTimeElapsed;
+    private JLabel labelTimeLeft;
 
     private ActiveProfileCompositeTreeCellRenderer treeRenderer;
     private ProfileExecutor profileExecutor;
@@ -326,7 +309,7 @@ public class MainForm {
     }
 
     private void onStartCompositeHandler(AttComposite profileComposite, Composite engineComposite) {
-        if(profileComposite == loadedProfile) {
+        if (profileComposite == loadedProfile) {
             LOG.info("Starting profile execution");
         }
 
@@ -343,7 +326,7 @@ public class MainForm {
         profileTree.repaint();
 
         //showMessage("End composite " + profileComposite.getName());
-        if(profileComposite == loadedProfile) {
+        if (profileComposite == loadedProfile) {
             LOG.info("Profile execution finished");
         }
     }
@@ -477,24 +460,33 @@ public class MainForm {
         devicesTable = new JTable();
         scrollPane1.setViewportView(devicesTable);
         final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
+        panel3.setLayout(new GridLayoutManager(4, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
         tabbedPane1.addTab("Profile", panel3);
         startButton = new JButton();
         startButton.setText("Start");
-        panel3.add(startButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel3.add(startButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         loadProfileButton = new JButton();
         loadProfileButton.setText("Load profile");
         panel3.add(loadProfileButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pauseButton = new JButton();
         pauseButton.setText("Pause");
-        panel3.add(pauseButton, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel3.add(pauseButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         stopButton = new JButton();
         stopButton.setText("Stop");
-        panel3.add(stopButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel3.add(stopButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane2 = new JScrollPane();
         panel3.add(scrollPane2, new GridConstraints(1, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         profileTree = new JTree();
         scrollPane2.setViewportView(profileTree);
+        labelStatus = new JLabel();
+        labelStatus.setText("labelStatus");
+        panel3.add(labelStatus, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        labelTimeElapsed = new JLabel();
+        labelTimeElapsed.setText("labelTimeElapsed");
+        panel3.add(labelTimeElapsed, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        labelTimeLeft = new JLabel();
+        labelTimeLeft.setText("labelTimeLeft");
+        panel3.add(labelTimeLeft, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
@@ -639,12 +631,21 @@ public class MainForm {
             while (true) {
                 if (profileExecutor != null) {
                     try {
-                        ProfileExecutor.ExecutionStatus executionStatus = profileExecutor.getExecutionStatus();
+                        final ProfileExecutor.ExecutionStatus executionStatus = profileExecutor.getExecutionStatus();
+                        SwingUtilities.invokeLater(() -> {
+                            labelStatus.setText(executionStatus.toString());
+                            labelTimeElapsed.setText("Elapsed: " + profileExecutor.getElapsedActionTimeSeconds() + " s");
+                            if (profileExecutor.getTimeoutTimeLeftSeconds() != Long.MAX_VALUE) {
+                                labelTimeLeft.setText("Left: " + profileExecutor.getTimeoutTimeLeftSeconds() + " s");
+                            } else {
+                                labelTimeLeft.setText("No timeout");
+                            }
+                        });
 
                         if (profileExecutor.getLastExecutionException() != null) {
                             profileExecutor.stop();
 
-                            if(extractRootCause(profileExecutor.getLastExecutionException()) instanceof ActionTimeoutException) {
+                            if (extractRootCause(profileExecutor.getLastExecutionException()) instanceof ActionTimeoutException) {
                                 LOG.error("Action timed out");
                                 showMessage("The execution of the current action exceeded the maximum allowed run time");
                             } else {
@@ -667,7 +668,7 @@ public class MainForm {
         }
 
         private Throwable extractRootCause(Throwable throwable) {
-            if(throwable.getCause() == null) {
+            if (throwable.getCause() == null) {
                 return throwable;
             }
 
@@ -678,20 +679,23 @@ public class MainForm {
     private class ActiveProfileCompositeTreeCellRenderer extends DefaultTreeCellRenderer {
         private final TreeCellRenderer renderer;
         private DefaultMutableTreeNode activeTreeNode;
+
         public ActiveProfileCompositeTreeCellRenderer(TreeCellRenderer renderer) {
             this.renderer = renderer;
         }
-        @Override public Component getTreeCellRendererComponent(
+
+        @Override
+        public Component getTreeCellRendererComponent(
                 JTree tree, Object value, boolean isSelected, boolean expanded,
                 boolean leaf, int row, boolean hasFocus) {
-            JComponent c = (JComponent)renderer.getTreeCellRendererComponent(
+            JComponent c = (JComponent) renderer.getTreeCellRendererComponent(
                     tree, value, isSelected, expanded, leaf, row, hasFocus);
             if (isSelected) {
                 c.setOpaque(false);
                 c.setForeground(getTextSelectionColor());
             } else {
                 c.setOpaque(true);
-                if (activeTreeNode!=null && value.equals(activeTreeNode)) {
+                if (activeTreeNode != null && value.equals(activeTreeNode)) {
                     c.setForeground(getTextNonSelectionColor());
                     c.setBackground(Color.YELLOW);
                 } else {
