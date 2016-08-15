@@ -12,7 +12,7 @@ import java.util.concurrent.TimeoutException;
  * Created by AbreuM on 30.06.2016.
  */
 public class Executor implements AutoCloseable {
-    private static final ExecutorService threadPool = Executors.newCachedThreadPool();
+    private static ExecutorService threadPool;
     private final Composite composite;
     private Future<RunStatus> executingFuture;
     private ExecutionException lastExecutionException;
@@ -121,5 +121,19 @@ public class Executor implements AutoCloseable {
         }
 
         return lastExecutionException;
+    }
+
+    /**
+     * Abort all tasks running in the thread pool
+     */
+    public static void abortThreadPool() {
+        threadPool.shutdownNow();
+    }
+
+    /**
+     * Start a new thread pool
+     */
+    public static void startThreadPool() {
+        threadPool = Executors.newCachedThreadPool();
     }
 }

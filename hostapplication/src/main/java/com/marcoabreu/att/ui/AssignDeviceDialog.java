@@ -21,7 +21,8 @@ public class AssignDeviceDialog extends JDialog {
 
     public AssignDeviceDialog(String alias, Set<PairedDevice> pairedDevices) {
         setContentPane(contentPane);
-        setModal(true);
+        //setModal(true);
+        this.setModalityType(ModalityType.DOCUMENT_MODAL);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {

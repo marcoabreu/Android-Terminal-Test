@@ -36,7 +36,7 @@ public abstract class Composite implements Callable<RunStatus> {
             return RunStatus.FAILURE;
         }
 
-        boolean runSuccessful = run(); //TODO what happens if there is an exception?
+        boolean runSuccessful = run();
 
         stop();
 

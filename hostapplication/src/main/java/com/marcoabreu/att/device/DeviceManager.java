@@ -78,23 +78,25 @@ public class DeviceManager {
         PairedDevice device = assignedDevices.get(alias);
         if(device == null) {
             //Device not defined, ask the user
-            showAssignDeviceDialog(alias);
+            device = showAssignDeviceDialog(alias);
 
-            return getPairedDeviceByAlias(alias); //Recursive in case user enters rubbish or closes the dialog.
-        } else {
-            return device;
+            if(device != null) {
+                addDeviceAssignment(device, alias);
+            } else {
+                throw new RuntimeException("User canceled device selection");
+            }
         }
+
+        return device;
     }
 
-    private void showAssignDeviceDialog(String alias) {
+    private PairedDevice showAssignDeviceDialog(String alias) {
         Set<PairedDevice> unassignedDevices = getPairedDevices();
         unassignedDevices.removeAll(assignedDevices.entrySet());
         AssignDeviceDialog dialog = new AssignDeviceDialog(alias, unassignedDevices);
         PairedDevice selectedDevice = dialog.showDialog();
 
-        if(selectedDevice != null) {
-            addDeviceAssignment(selectedDevice, alias);
-        }
+        return selectedDevice;
     }
 
     public synchronized void addDeviceAssignment(PairedDevice device, String alias) {

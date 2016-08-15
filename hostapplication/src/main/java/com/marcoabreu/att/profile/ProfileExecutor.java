@@ -52,6 +52,7 @@ public class ProfileExecutor implements AutoCloseable{
             Composite profileComposite = profile.convertLogic(this);
             Composite hookedComposite = applyHooks(profileComposite);
 
+            Executor.startThreadPool();
             this.executor = new Executor(hookedComposite);
 
             this.profileExecutionFlowWatcher.reset();
@@ -119,6 +120,7 @@ public class ProfileExecutor implements AutoCloseable{
 
     public void stop() {
         this.executor.abort();
+        Executor.abortThreadPool();
     }
 
     public ExecutionException getLastExecutionException() {
