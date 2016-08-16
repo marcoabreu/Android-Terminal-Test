@@ -347,6 +347,8 @@ public class ProfileExecutor implements AutoCloseable{
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
                         }
                     }
                     LOG.debug("Resuming execution");

@@ -247,40 +247,19 @@ public class HostApp {
         profile.setIdentifier("TestId");
         profile.setName("Testname");
 
-        AttActionHost action1 = new AttActionHost();
-        action1.setName("Set up Koppelfeld");
-        action1.setMethod("setSignals");
-        action1.setPath("Peripherals/Koppelfeld");
-        action1.setTimeoutMs(60000);
-        action1.addParameter(new AttParameterText("3G_1", "20"));
-        action1.addParameter(new AttParameterText("3G_2", "20"));
-        action1.addParameter(new AttParameterText("3G_3", "20"));
-        action1.addParameter(new AttParameterText("3G_4", "40"));
-        action1.addParameter(new AttParameterText("2G_1", "0"));
-        action1.addParameter(new AttParameterText("noise1", "93"));
-        profile.addChild(action1);
+        AttWhile while1 = new AttWhile();
+        profile.addChild(while1);
+
+        AttEquals equals1 = new AttEquals();
+        equals1.setValue1(new AttParameterText("", "as"));
+        equals1.setValue2(new AttParameterText("", "as"));
+        while1.setCondition(equals1);
 
         AttSleep sleep1 = new AttSleep(10000);
         sleep1.setName("Wait 10s");
-        profile.addChild(sleep1);
 
-        AttActionHost action5 = new AttActionHost();
-        action5.setName("Disable 3G");
-        action5.setMethod("setSignals");
-        action5.setPath("Peripherals/Koppelfeld");
-        action5.setTimeoutMs(60000);
-        action5.addParameter(new AttParameterText("3G_1", "93"));
-        action5.addParameter(new AttParameterText("3G_2", "93"));
-        action5.addParameter(new AttParameterText("3G_3", "93"));
-        action5.addParameter(new AttParameterText("3G_4", "93"));
-        profile.addChild(action5);
+        while1.addChild(sleep1);
 
-        AttParameterScriptHost deviceHostParam1 = new AttParameterScriptHost();
-        deviceHostParam1.setKey("random");
-        deviceHostParam1.setMethod("generateRandom");
-        deviceHostParam1.setPath("Peripherals/Koppelfeld");
-        deviceHostParam1.setTimeoutMs(60000);
-        action5.addParameter(deviceHostParam1);
 
         try {
             ProfileMarshaller.saveProfile(profile, "");
@@ -288,23 +267,7 @@ public class HostApp {
             e.printStackTrace();
         }
 
-        ProfileExecutor pe = new ProfileExecutor(profile);
 
-        pe.start();
-
-        while(true) {
-            RunStatus runState = pe.getRunState();
-            System.out.println(runState);
-            if(runState != RunStatus.RUNNING) {
-                break;
-            }
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }*/
 
     //Working phone-calls
@@ -470,43 +433,6 @@ public class HostApp {
     }*/
 
 
-    /*public static void main(String args[]) {
-        SerialPort serial = new SerialPort("COM6");
-        try {
-            serial.openPort();
-            serial.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R1P1", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            Thread.sleep(2000);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R2P10", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            Thread.sleep(2000);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R3P20", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            Thread.sleep(2000);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R4P30", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            Thread.sleep(2000);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R5P40", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            Thread.sleep(2000);
-            serial.writeByte((byte)0x02);
-            serial.writeString("R6P50", "US-ASCII");
-            serial.writeByte((byte)0x03);
-            //serial.writeString("C");
-        } catch (SerialPortException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }*/
 
     public static void main(String args[]) {
         LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
@@ -527,8 +453,9 @@ public class HostApp {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                break;
             }
         }
     }
+
 }

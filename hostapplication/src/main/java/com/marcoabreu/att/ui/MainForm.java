@@ -628,42 +628,43 @@ public class MainForm {
     private class ProfileExecutorWatcherThread implements Runnable {
         @Override
         public void run() {
-            while (true) {
-                if (profileExecutor != null) {
-                    try {
-                        final ProfileExecutor.ExecutionStatus executionStatus = profileExecutor.getExecutionStatus();
-                        SwingUtilities.invokeLater(() -> {
-                            labelStatus.setText(executionStatus.toString());
-                            labelTimeElapsed.setText("Elapsed: " + profileExecutor.getElapsedActionTimeSeconds() + " s");
-                            if (profileExecutor.getTimeoutTimeLeftSeconds() != Long.MAX_VALUE) {
-                                labelTimeLeft.setText("Left: " + profileExecutor.getTimeoutTimeLeftSeconds() + " s");
-                            } else {
-                                labelTimeLeft.setText("No timeout");
+            try {
+                while (true) {
+                    if (profileExecutor != null) {
+                        try {
+                            final ProfileExecutor.ExecutionStatus executionStatus = profileExecutor.getExecutionStatus();
+                            SwingUtilities.invokeLater(() -> {
+                                labelStatus.setText(executionStatus.toString());
+                                labelTimeElapsed.setText("Elapsed: " + profileExecutor.getElapsedActionTimeSeconds() + " s");
+                                if (profileExecutor.getTimeoutTimeLeftSeconds() != Long.MAX_VALUE) {
+                                    labelTimeLeft.setText("Left: " + profileExecutor.getTimeoutTimeLeftSeconds() + " s");
+                                } else {
+                                    labelTimeLeft.setText("No timeout");
+                                }
+                            });
+
+                            if (profileExecutor.getLastExecutionException() != null) {
+                                profileExecutor.stop();
+
+                                if (extractRootCause(profileExecutor.getLastExecutionException()) instanceof ActionTimeoutException) {
+                                    LOG.error("Action timed out");
+                                    showMessage("The execution of the current action exceeded the maximum allowed run time");
+                                } else {
+                                    LOG.error("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
+                                    showMessage("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
+                                }
+
+                                profileExecutor = null;
                             }
-                        });
-
-                        if (profileExecutor.getLastExecutionException() != null) {
-                            profileExecutor.stop();
-
-                            if (extractRootCause(profileExecutor.getLastExecutionException()) instanceof ActionTimeoutException) {
-                                LOG.error("Action timed out");
-                                showMessage("The execution of the current action exceeded the maximum allowed run time");
-                            } else {
-                                LOG.error("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
-                                showMessage("Error during profile execution", profileExecutor.getLastExecutionException().getCause());
-                            }
-
-                            profileExecutor = null;
+                        } catch (Exception ex) {
+                            showMessage("Unknown error in profile watcher", ex);
                         }
-                    } catch (Exception ex) {
-                        showMessage("Unknown error in profile watcher", ex);
                     }
-                }
 
-                try {
                     Thread.sleep(PROFILE_WATCHER_UPDATE_MS);
-                } catch (InterruptedException e) {
                 }
+            } catch (InterruptedException e) {
+                LOG.error("ProfileExecutorWatcherThread interrupted");
             }
         }
 

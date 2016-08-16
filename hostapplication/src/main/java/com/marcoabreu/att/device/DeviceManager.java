@@ -196,39 +196,37 @@ public class DeviceManager {
         public void run() {
 
             Set<JadbDevice> previouslyConnectedDevices = new HashSet<>();
-            while(true) {
-                try {
-                    Set<JadbDevice> connectedDevices = new HashSet<>(getConnectedDevices());
-                    Set<JadbDevice> finalPreviouslyConnectedDevices = previouslyConnectedDevices; //Required because of lambda
-                    previouslyConnectedDevices = connectedDevices;
+            try {
+                while (true) {
+                    try {
+                        Set<JadbDevice> connectedDevices = new HashSet<>(getConnectedDevices());
+                        Set<JadbDevice> finalPreviouslyConnectedDevices = previouslyConnectedDevices; //Required because of lambda
+                        previouslyConnectedDevices = connectedDevices;
 
-                    //Check for disconnected devices
-                    finalPreviouslyConnectedDevices.stream().filter(device -> !connectedDevices.contains(device)).forEach(device -> {
-                        invokeOnDeviceDisconnected(device);
-                    });
+                        //Check for disconnected devices
+                        finalPreviouslyConnectedDevices.stream().filter(device -> !connectedDevices.contains(device)).forEach(device -> {
+                            invokeOnDeviceDisconnected(device);
+                        });
 
-                    //Check for newly connected devices
-                    connectedDevices.stream().filter(device -> !finalPreviouslyConnectedDevices.contains(device)).forEach(device -> {
-                        invokeOnDeviceConnected(device);
+                        //Check for newly connected devices
+                        connectedDevices.stream().filter(device -> !finalPreviouslyConnectedDevices.contains(device)).forEach(device -> {
+                            invokeOnDeviceConnected(device);
 
-                        //TODO: Check if permission required
-                        if(false) {
-                            invokeOnDeviceNeedPermission(device);
-                        }
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (JadbException e) {
-                    e.printStackTrace();
-                }
+                            //TODO: Check if permission required
+                            if (false) {
+                                invokeOnDeviceNeedPermission(device);
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JadbException e) {
+                        e.printStackTrace();
+                    }
 
-                try {
                     Thread.sleep(CONNECTION_WATCHER_DELAY_MS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
+            } catch (InterruptedException e) {
+                LOG.error("ConnectedDevicesThread interrupted. Stopping");
             }
         }
     }

@@ -1,10 +1,9 @@
 package com.marcoabreu.att.profile.data;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import java.io.Serializable;
 
 /**
  * Created by AbreuM on 29.07.2016.
@@ -12,7 +11,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AttParameter {
 
-    @XmlAttribute(name = "key", required = true)
+    @XmlAttribute(name = "key")
     private String key;
 
     public AttParameter() {

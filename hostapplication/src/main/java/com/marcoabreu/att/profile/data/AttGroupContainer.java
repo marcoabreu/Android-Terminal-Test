@@ -11,7 +11,7 @@ import java.util.List;
  * Created by AbreuM on 29.07.2016.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlSeeAlso( { AttActionDevice.class, AttActionHost.class, AttSleep.class })
+@XmlSeeAlso( { AttActionDevice.class, AttActionHost.class, AttSleep.class, AttWhile.class })
 public abstract class AttGroupContainer extends AttComposite {
     @XmlElementRef
     protected List<AttComposite> composites;

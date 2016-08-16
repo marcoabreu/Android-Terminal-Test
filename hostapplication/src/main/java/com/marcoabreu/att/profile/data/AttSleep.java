@@ -33,7 +33,7 @@ public class AttSleep extends AttComposite {
                 Thread.sleep(timeToSleep);
                 return true;
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
                 return false;
             }
         }));

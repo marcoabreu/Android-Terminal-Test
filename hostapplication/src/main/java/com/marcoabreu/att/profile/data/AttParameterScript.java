@@ -1,10 +1,9 @@
 package com.marcoabreu.att.profile.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by AbreuM on 29.07.2016.
@@ -24,14 +23,6 @@ public abstract class AttParameterScript extends AttParameter implements Dynamic
 
     public AttParameterScript() {
         this.parameters = new ArrayList<>();
-    }
-
-    /**
-     * Load the referenced action from the file system and return the content
-     * @return Content of the reference action
-     */
-    protected String retrieveAction() {
-        throw new RuntimeException();
     }
 
     public void addParameter(AttParameter attParameter) {
