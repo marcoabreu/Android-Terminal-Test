@@ -1,17 +1,30 @@
 package com.marcoabreu.att.device;
 
+import com.marcoabreu.att.utilities.Configuration;
+import com.marcoabreu.att.utilities.FileHelper;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Class to turn java source code into a class (JavaSE) or dex (Android) file ready to be loaded on runtime
@@ -24,15 +37,26 @@ public class RuntimeCompiler {
     private static final String BUILD_DIRNAME = "build";
     private static final String DEX_FILENAME = "classes.dex";
 
-    private static final String[] DEPENDENCIES = new String[] {
-            //TODO: do this nicely and use relative paths - especially try not to copy android libraries into our project (license????)
-            //"C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\platforms\\android-22\\android.jar", // Android library
-            //Android app, but have no idea how so we just put everything into TerminalCommunication
-            //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-appcompat-v7-24.0.0-classes.jar", //Android support library
-            //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-support-v4-24.0.0-classes.jar", //Android support library
-            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar", //Shared communication library
-            "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\build\\libs\\hostapplication.jar"//Host application
-    };
+    private static final String[] DEPENDENCIES;
+
+    static {
+        try {
+            DEPENDENCIES = new String[]{
+                    //TODO: do this nicely and use relative paths - especially try not to copy android libraries into our project (license????)
+                    //"C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\platforms\\android-22\\android.jar", // Android library
+                    //Android app, but have no idea how so we just put everything into TerminalCommunication
+                    //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-appcompat-v7-24.0.0-classes.jar", //Android support library
+                    //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\libs\\android-support-v4-24.0.0-classes.jar", //Android support library
+
+                    //These two are required but are already contained in the fatJar, re-add this if we remove the fatJar
+                    //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\terminalcommunication\\build\\libs\\terminalcommunication.jar", //Shared communication library
+                    //"C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\build\\libs\\hostapplication.jar"//Host application
+                    FileHelper.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()
+            };
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private final String sourceDirectory;
     private File tempDir = null;
@@ -123,9 +147,8 @@ public class RuntimeCompiler {
         }
         dependencyPaths.addAll(Arrays.asList(DEPENDENCIES));
 
-        //TODO remove local paths
         //This requires JDK7 because of android-22
-        String buildString = "\"C:\\Program Files\\Java\\jdk1.7.0_79\\bin\\javac.exe\" -nowarn -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @\"TEMPDIR\\SOURCELISTFILE\"";
+        String buildString = "\"" + getJavaCompilerFile().getAbsolutePath() + "\" -nowarn -cp \"DEPENDENCIES\" -d \"BUILDDIR\" @\"TEMPDIR\\SOURCELISTFILE\"";
         buildString = buildString.replace("DEPENDENCIES", String.join(";", dependencyPaths));
         buildString = buildString.replace("BUILDDIR", buildDir.getAbsolutePath());
         buildString = buildString.replace("SOURCELISTFILE", SOURCE_FILENAME);
@@ -152,11 +175,42 @@ public class RuntimeCompiler {
     }
 
     /**
+     * Reads the java compiler filepath from the config or asks the user to enter it
+     * @return
+     */
+    private File getJavaCompilerFile() {
+        File javacFile = null;
+        if(Configuration.getInstance().getJdk7path().isEmpty()) {
+            //Ask user
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select javac.exe from JDK7");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                    ".exe files", "exe");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                javacFile = chooser.getSelectedFile();
+
+                if(!javacFile.getName().endsWith("javac.exe")) {
+                    throw new RuntimeException("You need to select the java compiler called javac.exe");
+                }
+
+                Configuration.getInstance().setJdk7path(javacFile.getAbsolutePath());
+            } else {
+                throw new RuntimeException("You did not select a javac compiler");
+            }
+        } else {
+            javacFile = new File(Configuration.getInstance().getJdk7path());
+        }
+
+        return javacFile;
+    }
+
+    /**
      * Convert class-file into android-specific dex-file
      */
     private File compileToDex() throws IOException, InterruptedException, CompilerException {
-        //TODO: use ANDROID_HOME
-        String buildString = "C:\\Users\\AbreuM\\AppData\\Local\\Android\\sdk\\build-tools\\24.0.0\\dx.bat --dex --output DEXFILE BUILDDIR";
+        String buildString = "\"" + getDexBatFile().getAbsolutePath() + "\" --dex --output DEXFILE BUILDDIR";
         buildString = buildString.replace("DEXFILE", DEX_FILENAME);
         buildString = buildString.replace("BUILDDIR", BUILD_DIRNAME);
 
@@ -166,6 +220,38 @@ public class RuntimeCompiler {
 
         if(!dexFile.exists()) {
             throw new CompilerException("Unable to generate dex file with buildstring: " + buildString);
+        }
+
+        return dexFile;
+    }
+
+    /**
+     * Reads the dex compiler filepath from the config or asks the user to enter it
+     * @return
+     */
+    private File getDexBatFile() {
+        File dexFile = null;
+        if(Configuration.getInstance().getAndroidSdkPath().isEmpty()) {
+            //Ask user
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select dx.bat Android-SDK build-tools");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                    ".bat files", "bat");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                dexFile = chooser.getSelectedFile();
+
+                if(!dexFile.getName().endsWith("dx.bat")) {
+                    throw new RuntimeException("You need to select the dex compiler called dx.bat");
+                }
+
+                Configuration.getInstance().setAndroidSdkPath(dexFile.getAbsolutePath());
+            } else {
+                throw new RuntimeException("You did not select a dex compiler");
+            }
+        } else {
+            dexFile = new File(Configuration.getInstance().getAndroidSdkPath());
         }
 
         return dexFile;

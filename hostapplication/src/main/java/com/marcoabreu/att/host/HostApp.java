@@ -1,11 +1,12 @@
 package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.ui.MainForm;
+import com.marcoabreu.att.utilities.FileHelper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.File;
 
 public class HostApp {
     /*
@@ -436,15 +437,7 @@ public class HostApp {
 
     public static void main(String args[]) {
         LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
-        try {
-            URL resource = new HostApp().
-                    getClass().
-                    getClassLoader().
-                    getResource("log4j2.xml");
-            context.setConfigLocation(resource.toURI());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        context.setConfigLocation(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "log4j2.xml").toURI());
 
         MainForm form = new MainForm();
         form.show();

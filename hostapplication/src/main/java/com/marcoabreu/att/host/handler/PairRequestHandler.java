@@ -8,6 +8,7 @@ import com.marcoabreu.att.communication.message.PairResponseMessage;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.device.PairedDevice;
 import com.marcoabreu.att.device.RuntimeCompiler;
+import com.marcoabreu.att.utilities.FileHelper;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,6 +22,9 @@ import java.util.Map;
  * Created by AbreuM on 04.08.2016.
  */
 public class PairRequestHandler implements BridgeMessageListener{
+    private static final String SCRIPTS_DEVICE_BASE_PATH = "scripts/device";
+    private static final String SCRIPT_LIBS_DEVICE_BASE_PATH = "scripts/device/libs";
+
     @Override
     public void onMessage(PhysicalDevice device, BaseMessage message) throws IOException {
         if(message instanceof PairRequestMessage) {
@@ -35,9 +39,8 @@ public class PairRequestHandler implements BridgeMessageListener{
                 pairedDevice.setDeviceModel(request.getDeviceModel());
                 pairedDevice.setJadbDevice(DeviceManager.getInstance().getConnectedDevices().stream().filter(jadbDevice -> jadbDevice.getSerial().equals(pairedDevice.getSerial())).findFirst().get());
 
-                //TODO remove local path
-                String basePath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device";
-                String libPath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\device\\libs";
+                String basePath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPTS_DEVICE_BASE_PATH).getPath();
+                String libPath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPT_LIBS_DEVICE_BASE_PATH).getPath();
                 RuntimeCompiler compiler = new RuntimeCompiler(basePath);
                 Pair<File, Map<String, String>> compiledDex = compiler.convertDex(new File(libPath));
                 response.setDexFileContent(FileUtils.readFileToByteArray(compiledDex.getLeft()));

@@ -52,7 +52,7 @@ public class Koppelfeld {
             //TODO: Show dialog to show user free cells and ask them to connect the missing cells and provide the respective channel
             System.out.println("TODO: Let user reconnect cells");
 
-            //Remove this as soon as dialog is implemented - this will just act like it has been reassigned
+            //TODO: Remove this as soon as dialog is implemented - this will just act like it has been reassigned
             for(String cell : missingCells) {
 
                 Map.Entry<String, Integer> freeCell = freeCells.entrySet().iterator().next();

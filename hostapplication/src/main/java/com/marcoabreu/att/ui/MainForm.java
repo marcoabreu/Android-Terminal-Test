@@ -18,24 +18,21 @@ import com.marcoabreu.att.profile.ProfileMarshaller;
 import com.marcoabreu.att.profile.data.AttComposite;
 import com.marcoabreu.att.profile.data.AttGroupContainer;
 import com.marcoabreu.att.profile.data.AttProfile;
+import com.marcoabreu.att.utilities.Configuration;
+import com.marcoabreu.att.utilities.FileHelper;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +41,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.xml.bind.JAXBException;
+
+import se.vidstige.jadb.JadbDevice;
+import se.vidstige.jadb.JadbException;
+
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.ASSIGNED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PAIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PERMISSION_REQUIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.UNPAIRED;
 
 /**
  * Created by AbreuM on 08.08.2016.
@@ -75,6 +100,13 @@ public class MainForm {
 
 
     public MainForm() {
+        try {
+            Configuration.loadConfiguration(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "config.xml"));
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+
+
         mainFrame = new JFrame("Android Terminal Test");
         mainFrame.setContentPane(this.panel1);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -139,6 +171,16 @@ public class MainForm {
         devicesTable.setModel(new DeviceTableItemModel());
         treeRenderer = new ActiveProfileCompositeTreeCellRenderer(profileTree.getCellRenderer());
         profileTree.setCellRenderer(treeRenderer);
+
+        mainFrame.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                try {
+                    Configuration.saveConfiguration(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "config.xml"));
+                } catch (JAXBException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
 
         try {

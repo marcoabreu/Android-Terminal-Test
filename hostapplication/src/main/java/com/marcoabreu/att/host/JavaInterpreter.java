@@ -3,7 +3,9 @@ package com.marcoabreu.att.host;
 import com.marcoabreu.att.device.CompilerException;
 import com.marcoabreu.att.device.RuntimeCompiler;
 import com.marcoabreu.att.profile.ScriptRuntimeContainer;
+import com.marcoabreu.att.utilities.FileHelper;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
@@ -25,6 +27,8 @@ import java.util.concurrent.ExecutionException;
  */
 public class JavaInterpreter {
     //Inspired by http://android-developers.blogspot.cz/2011/07/custom-class-loading-in-dalvik.html
+    private static final String SCRIPTS_HOST_BASE_PATH = "scripts/host";
+    private static final String SCRIPT_LIBS_HOST_BASE_PATH = "scripts/host/libs";
     private static final String DEX_FILENAME = "att-scripts.dex";
     private static final int BUFFER_SIZE = 8 * 1024;
     private static URLClassLoader urlClassLoader;
@@ -73,9 +77,8 @@ public class JavaInterpreter {
      * Load the dynamic script files
      */
     public static void init(/*File classDirectory, Map<String, String> classpathMapping*/) throws IOException, ExecutionException, InterruptedException, CompilerException {
-        //TODO remove local path
-        String basePath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\host";
-        String libPath = "C:\\Users\\AbreuM\\AndroidStudioProjects\\AndroidTerminalTest\\hostapplication\\res\\scripts\\host\\libs";
+        String basePath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPTS_HOST_BASE_PATH).getPath();
+        String libPath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPT_LIBS_HOST_BASE_PATH).getPath();
         RuntimeCompiler compiler = new RuntimeCompiler(basePath);
         Pair<File, Map<String, String>> compiledClasses = compiler.convertClass(new File(libPath));
 

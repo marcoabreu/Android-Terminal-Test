@@ -7,7 +7,6 @@ import java.util.function.Supplier;
  * Created by AbreuM on 30.06.2016.
  */
 public class Action extends Composite {
-    //TODO: add timeout
     private final Supplier<Boolean> runnable;
 
     /**

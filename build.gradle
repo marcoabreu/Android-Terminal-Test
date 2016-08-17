@@ -23,3 +23,5 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task buildRelease (dependsOn: ["clean",":hostapplication:buildHostApp",":app:buildClientApp"])

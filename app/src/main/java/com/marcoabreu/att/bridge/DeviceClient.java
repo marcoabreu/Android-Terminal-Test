@@ -2,7 +2,6 @@ package com.marcoabreu.att.bridge;
 
 import android.os.Build;
 import android.util.Log;
-
 import com.marcoabreu.att.communication.BridgeEndpoint;
 import com.marcoabreu.att.communication.BridgeMessageListener;
 import com.marcoabreu.att.communication.PhysicalDevice;
@@ -16,8 +15,9 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Client to connect to host application
@@ -35,8 +35,8 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
 
     public DeviceClient(int port) {
         this.port = port;
-        this.bridgeMessageListeners = ConcurrentHashMap.newKeySet();
-        this.bridgeEventListeners = ConcurrentHashMap.newKeySet();
+        this.bridgeMessageListeners = Collections.newSetFromMap(new HashMap<>());
+        this.bridgeEventListeners = Collections.newSetFromMap(new HashMap<>());
     }
 
     public void start() throws IOException {

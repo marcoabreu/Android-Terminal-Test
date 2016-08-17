@@ -1,0 +1,3 @@
+//Put all required permissions into this file line by line
+android.permission.CALL_PHONE
+android.permission.INTERNET

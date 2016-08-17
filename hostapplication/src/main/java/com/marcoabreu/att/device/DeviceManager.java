@@ -1,11 +1,14 @@
 package com.marcoabreu.att.device;
 
 import com.marcoabreu.att.ui.AssignDeviceDialog;
-import org.apache.logging.log4j.Logger;
-import se.vidstige.jadb.*;
-import se.vidstige.jadb.managers.Package;
-import se.vidstige.jadb.managers.PackageManager;
+import com.marcoabreu.att.utilities.FileHelper;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -13,12 +16,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import se.vidstige.jadb.AdbServerLauncher;
+import se.vidstige.jadb.JadbConnection;
+import se.vidstige.jadb.JadbDevice;
+import se.vidstige.jadb.JadbException;
+import se.vidstige.jadb.Transport;
+import se.vidstige.jadb.managers.Package;
+import se.vidstige.jadb.managers.PackageManager;
+
 /**
  * Central element for device interaction
  * Created by AbreuM on 02.08.2016.
  */
 public class DeviceManager {
     private static final Logger LOG = org.apache.logging.log4j.LogManager.getLogger();
+    private static final String APP_PERMISSION_FILE = "/scripts/device/permissions.txt";
+    private static final String APK_FILE_PATH = "/apk/app-release.apk";
+    private static final String APK_PACKAGE_NAME = "com.marcoabreu.att";
     private static final int SERVER_PORT = 12022;
     private static final int CONNECTION_WATCHER_DELAY_MS = 2000;
     private static DeviceManager instance;
@@ -166,18 +180,45 @@ public class DeviceManager {
      * @param device Device to pair
      */
     public void startPairing(JadbDevice device) throws IOException, JadbException {
-        //Transport transport = createConnection().createTransport();
+        //Start tunnel
         Transport transport = device.getTransport();
-        //transport.send(String.format("host-serial:%s:forward:tcp:%d;tcp:%d", device.getSerial(), SERVER_PORT, SERVER_PORT));
-        //transport.send(String.format("host-serial:%s:forward:tcp:%d;tcp:%d", device.getSerial(), SERVER_PORT, SERVER_PORT));
         transport.send(String.format("reverse:forward:tcp:%d;tcp:%d", SERVER_PORT, SERVER_PORT));
         transport.verifyResponse();
 
-        //Launch app
+        //Close app if it was opened
+        device.executeShell("am force-stop " + APK_PACKAGE_NAME);
+
+        //Start app
         PackageManager pm = new PackageManager(device);
-        //TODO PackageManager install app if not installed and execute
-        //adb shell pm grant com.your.package ****** to grant all permissions
-        pm.launch(new Package("com.marcoabreu.att"));
+        checkInstallApp(pm);
+
+        grantPermissions(device);
+
+        pm.launch(new Package(APK_PACKAGE_NAME));
+    }
+
+    private void checkInstallApp(PackageManager packageManager) throws IOException, JadbException {
+        if(!packageManager.getPackages().stream().anyMatch(aPackage -> aPackage.toString().equals(APK_PACKAGE_NAME))) {
+            LOG.info("Client application not found, installing...");
+            File apk = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), APK_FILE_PATH);
+            packageManager.forceInstall(apk);
+        } else {
+            LOG.debug("Client application found");
+        }
+    }
+
+    private void grantPermissions(JadbDevice device) throws IOException, JadbException {
+        try (BufferedReader br = new BufferedReader(new FileReader(FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), APP_PERMISSION_FILE)))) {
+            String permission;
+            while ((permission = br.readLine()) != null) {
+                if(permission.startsWith("//") || permission.isEmpty()) {
+                    continue;
+                }
+
+                LOG.info("Granting permission " + permission);
+                device.executeShell("pm grant " + APK_PACKAGE_NAME + " " + permission);
+            }
+        }
     }
 
     private JadbConnection createConnection() throws IOException {
