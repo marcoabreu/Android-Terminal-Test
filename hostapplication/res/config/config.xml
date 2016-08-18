@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- TODO: Remove, this is only for my computer -->
+<AttConfig>
+    <Jdk7Path>C:\Program Files\Java\jdk1.7.0_79\bin\javac.exe</Jdk7Path>
+    <AndroidSdkPath>C:\Users\AbreuM\AppData\Local\Android\sdk\build-tools\24.0.0\dx.bat</AndroidSdkPath>
+</AttConfig>

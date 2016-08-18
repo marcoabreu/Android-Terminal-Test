@@ -35,4 +35,9 @@ public class HostActionCompiler extends ActionCompiler {
 
         return null;
     }
+
+    @Override
+    public void finish() throws IOException {
+        //nothing to do on host
+    }
 }

@@ -20,22 +20,15 @@ import com.marcoabreu.att.profile.data.AttGroupContainer;
 import com.marcoabreu.att.profile.data.AttProfile;
 import com.marcoabreu.att.utilities.Configuration;
 import com.marcoabreu.att.utilities.FileHelper;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -48,7 +41,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.xml.bind.JAXBException;
+
+import se.vidstige.jadb.JadbDevice;
+import se.vidstige.jadb.JadbException;
+
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.ASSIGNED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PAIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.PERMISSION_REQUIRED;
+import static com.marcoabreu.att.ui.MainForm.ConnectionStatus.UNPAIRED;
 
 /**
  * Created by AbreuM on 08.08.2016.
@@ -70,6 +91,7 @@ public class MainForm {
     private JLabel labelStatus;
     private JLabel labelTimeElapsed;
     private JLabel labelTimeLeft;
+    private JButton uninstallButton;
 
     private ActiveProfileCompositeTreeCellRenderer treeRenderer;
     private ProfileExecutor profileExecutor;
@@ -93,6 +115,7 @@ public class MainForm {
 
         this.pairButton.setEnabled(false);
         this.unassignButton.setEnabled(false);
+        this.uninstallButton.setEnabled(false);
 
         profileExecutorWatcherThread = new Thread(new ProfileExecutorWatcherThread());
         profileExecutorWatcherThread.setDaemon(true);
@@ -143,6 +166,12 @@ public class MainForm {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 selectedDeviceChangeHandler();
+            }
+        });
+        uninstallButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                uninstallAppButtonHandler();
             }
         });
 
@@ -384,15 +413,31 @@ public class MainForm {
         }
     }
 
+    private void uninstallAppButtonHandler() {
+        Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
+
+        if (deviceData != null) {
+            try {
+                DeviceManager.getInstance().uninstallApp(deviceData.getLeft());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JadbException e) {
+                showMessage("Error uninstalling app on device", e);
+            }
+        }
+    }
+
     private void selectedDeviceChangeHandler() {
         Pair<JadbDevice, DeviceTableItemModel.DeviceTableData> deviceData = getSelectedDevice();
 
         if (deviceData != null) {
             this.pairButton.setEnabled(deviceData.getRight().getConnectionStatus() == UNPAIRED);
             this.unassignButton.setEnabled(deviceData.getRight().getConnectionStatus() == ASSIGNED);
+            this.uninstallButton.setEnabled(true);
         } else {
             this.pairButton.setEnabled(false);
             this.unassignButton.setEnabled(false);
+            this.uninstallButton.setEnabled(false);
         }
     }
 
@@ -468,7 +513,7 @@ public class MainForm {
         tabbedPane1 = new JTabbedPane();
         panel1.add(tabbedPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new GridLayoutManager(2, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
         tabbedPane1.addTab("Devices", panel2);
         unassignButton = new JButton();
         unassignButton.setText("Unassign");
@@ -477,9 +522,12 @@ public class MainForm {
         pairButton.setText("Pair");
         panel2.add(pairButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel2.add(scrollPane1, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel2.add(scrollPane1, new GridConstraints(0, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         devicesTable = new JTable();
         scrollPane1.setViewportView(devicesTable);
+        uninstallButton = new JButton();
+        uninstallButton.setText("Uninstall app");
+        panel2.add(uninstallButton, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(4, 3, new Insets(0, 0, 0, 0), -1, -1, true, false));
         tabbedPane1.addTab("Profile", panel3);
@@ -731,6 +779,12 @@ public class MainForm {
         public void setActiveNode(DefaultMutableTreeNode treeNode) {
             this.activeTreeNode = treeNode;
         }
+    }
+
+    public void handleException(Exception ex) {
+        SwingUtilities.invokeLater(() -> {
+            showMessage("Exception", ex);
+        });
     }
 
 }

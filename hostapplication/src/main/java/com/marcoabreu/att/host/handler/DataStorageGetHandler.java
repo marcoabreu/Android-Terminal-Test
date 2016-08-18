@@ -23,7 +23,7 @@ public class DataStorageGetHandler implements BridgeMessageListener {
             try {
                 response.setValue(DataStorage.getInstance().getData(getRequest.getKey(), device));
             } catch (Exception ex) {
-                response.setOccuredException(ex);
+                response.setOccurredException(ex);
             }
 
             device.sendResponse(response);

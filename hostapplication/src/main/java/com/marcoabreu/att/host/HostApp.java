@@ -432,13 +432,16 @@ public class HostApp {
         }
     }*/
 
-
+    private static MainForm form;
+    public static void handleException(Exception ex) {
+        form.handleException(ex);
+    }
 
     public static void main(String args[]) {
         LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
         context.setConfigLocation(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "log4j2.xml").toURI());
 
-        MainForm form = new MainForm();
+        form = new MainForm();
         form.show();
 
         while(true) {

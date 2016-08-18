@@ -6,6 +6,7 @@ package com.marcoabreu.att.communication;
 public enum Opcode {
     PAIR_REQUEST,
     PAIR_RESPONSE,
+    ABORT_ACTION_REQUEST,
     EXECUTE_ACTION_REQUEST,
     EXECUTE_ACTION_RESPONSE,
     STORAGE_DATA_GET_REQUEST,

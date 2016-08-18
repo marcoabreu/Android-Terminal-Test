@@ -41,9 +41,9 @@ public class PhysicalDevice implements Closeable {
      * @param message
      */
     public void sendResponse(BaseMessage message) throws IOException {
-        if(message.getOccuredException() != null) {
+        if(message.getOccurredException() != null) {
             System.out.println("Sending faulty response: " + message.getClass().toString());
-            message.getOccuredException().printStackTrace();
+            message.getOccurredException().printStackTrace();
         }
 
         out.writeObject(message);

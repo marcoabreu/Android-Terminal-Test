@@ -1,14 +1,15 @@
 package com.marcoabreu.att;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
+
 import com.marcoabreu.att.bridge.BridgeEventListener;
 import com.marcoabreu.att.bridge.DeviceClient;
 import com.marcoabreu.att.bridge.PairedHost;
@@ -21,10 +22,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.toString();
     private static Context context;
 
+    private int mInterval = 5000; // 5 seconds by default, can be changed later
+    private Handler mHandler;
+
     TextView info;
     TextView status;
-    Button compilerTestButton;
+    TextView networkType;
     DeviceClient deviceClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,17 +41,11 @@ public class MainActivity extends AppCompatActivity {
 
         info = (TextView) findViewById(R.id.textViewInfo);
         status = (TextView) findViewById(R.id.textViewStatus);
-        compilerTestButton = (Button) findViewById(R.id.button);
-
-        compilerTestButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                compilerTest();
-            }
-        });
+        networkType = (TextView) findViewById(R.id.textViewNetworkType);
 
         info.setText("Serial: " + Build.SERIAL);
         status.setText("Unpaired");
+        networkType.setText("Waiting...");
 
         try {
             deviceClient = new DeviceClient(12022);
@@ -83,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
 
-    private void compilerTest() {
-
+        mHandler = new Handler();
+        startRepeatingTask();
     }
 
 
@@ -102,7 +100,37 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
+        stopRepeatingTask();
     }
+
+    private void updateStatus() {
+        //ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        //NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        //networkType.setText("Network: " + networkInfo.getSubtypeName());
+    }
+
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                updateStatus(); //this function can change value of mInterval.
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // your update method throws an exception
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
 
     public static Context getAppContext() {
         return MainActivity.context;

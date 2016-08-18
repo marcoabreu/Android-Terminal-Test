@@ -2,6 +2,7 @@ package com.marcoabreu.att.profile.data;
 
 import com.marcoabreu.att.host.HostActionCompiler;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,6 +32,12 @@ public class AttParameterScriptHost extends AttParameterScript {
             compiler = new HostActionCompiler(this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        } finally {
+            try {
+                compiler.finish();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

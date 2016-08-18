@@ -2,9 +2,11 @@ package com.marcoabreu.att.device;
 
 import com.marcoabreu.att.ui.AssignDeviceDialog;
 import com.marcoabreu.att.utilities.FileHelper;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
+import se.vidstige.jadb.*;
+import se.vidstige.jadb.managers.Package;
+import se.vidstige.jadb.managers.PackageManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,14 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import se.vidstige.jadb.AdbServerLauncher;
-import se.vidstige.jadb.JadbConnection;
-import se.vidstige.jadb.JadbDevice;
-import se.vidstige.jadb.JadbException;
-import se.vidstige.jadb.Transport;
-import se.vidstige.jadb.managers.Package;
-import se.vidstige.jadb.managers.PackageManager;
 
 /**
  * Central element for device interaction
@@ -141,6 +135,11 @@ public class DeviceManager {
         LOG.info("Paired successfully to device " + device.getSerial());
         this.pairedDevices.add(device);
         invokeOnDevicePaired(device);
+    }
+
+    public void uninstallApp(JadbDevice device) throws IOException, JadbException {
+        PackageManager pm = new PackageManager(device);
+        pm.uninstall(new Package(APK_PACKAGE_NAME));
     }
 
     public void addDevicePairedListener(DeviceConnectionListener listener) {

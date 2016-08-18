@@ -2,6 +2,7 @@ package com.marcoabreu.att.device;
 
 import com.marcoabreu.att.communication.BridgeEndpoint;
 import com.marcoabreu.att.communication.BridgeMessageListener;
+import com.marcoabreu.att.host.HostApp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -159,6 +160,7 @@ public class DeviceServer implements Closeable, BridgeEndpoint {
             } catch (IOException ex) {
                 LOG.error("Device " + pairedDevice.getSerial() + " disconnected" , ex);
                 DeviceManager.getInstance().invokeOnDeviceUnpaired(pairedDevice);
+                HostApp.handleException(ex);
             }
         }
     }

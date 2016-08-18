@@ -26,12 +26,13 @@
             android:layout_below="@+id/textViewInfo"
             android:layout_alignParentStart="true" />
 
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Compiler-test"
-        android:id="@+id/button"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/textViewNetworkType"
         android:layout_below="@+id/textViewStatus"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="46dp" />
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

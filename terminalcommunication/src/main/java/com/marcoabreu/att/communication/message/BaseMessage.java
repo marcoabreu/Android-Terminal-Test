@@ -2,7 +2,9 @@ package com.marcoabreu.att.communication.message;
 
 import com.marcoabreu.att.communication.Opcode;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.UUID;
 
 /**
@@ -11,7 +13,7 @@ import java.util.UUID;
 public abstract class BaseMessage implements Serializable {
     private final UUID transactionId;
     private final Opcode opcode;
-    private Exception occuredException = null;
+    private String occurredExceptionText = null;
 
     /**
      * Generate a new message
@@ -35,17 +37,22 @@ public abstract class BaseMessage implements Serializable {
      * @throws Exception Exception thrown by the other party while serving the response
      */
     public void checkValidity() throws Exception {
-        if(occuredException != null) {
-            throw occuredException;
+        if(occurredExceptionText != null) {
+            throw new Exception(occurredExceptionText);
         }
     }
 
-    public Exception getOccuredException() {
-        return occuredException;
+    public Exception getOccurredException() {
+        return occurredExceptionText == null ? null : new Exception(occurredExceptionText);
     }
 
-    public void setOccuredException(Exception occuredException) {
-        this.occuredException = occuredException;
+    public void setOccurredException(Exception occurredException) {
+        StringWriter writer = new StringWriter();
+        PrintWriter printWriter = new PrintWriter( writer );
+        occurredException.printStackTrace( printWriter );
+        printWriter.flush();
+
+        this.occurredExceptionText = writer.toString();
     }
 
     public UUID getTransactionId() {

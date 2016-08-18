@@ -3,6 +3,7 @@ package com.marcoabreu.att.profile.data;
 import com.marcoabreu.att.device.DeviceManager;
 import com.marcoabreu.att.host.DeviceActionCompiler;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -36,6 +37,12 @@ public class AttParameterScriptDevice extends AttParameterScript {
             compiler = new DeviceActionCompiler(DeviceManager.getInstance().getPairedDeviceByAlias(targetDevice), this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        } finally {
+            try {
+                compiler.finish();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

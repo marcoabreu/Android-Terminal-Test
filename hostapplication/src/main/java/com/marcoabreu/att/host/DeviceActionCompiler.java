@@ -2,6 +2,7 @@ package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.communication.FutureResponse;
 import com.marcoabreu.att.communication.PhysicalDevice;
+import com.marcoabreu.att.communication.message.AbortActionMessage;
 import com.marcoabreu.att.communication.message.ExecuteActionMessage;
 import com.marcoabreu.att.communication.message.ExecuteActionResponse;
 import com.marcoabreu.att.profile.data.AttParameter;
@@ -47,5 +48,11 @@ public class DeviceActionCompiler extends ActionCompiler {
         ExecuteActionMessage request = new ExecuteActionMessage(this.methodName, this.className, this.scriptContent, this.scriptPath, true, parameters);
         FutureResponse<ExecuteActionResponse> response = this.device.sendMessage(request);
         return response.get().getReturnValue();
+    }
+
+    @Override
+    public void finish() throws IOException {
+        AbortActionMessage request = new AbortActionMessage();
+        this.device.sendMessage(request);
     }
 }

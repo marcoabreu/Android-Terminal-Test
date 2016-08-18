@@ -127,7 +127,6 @@ public class Koppelfeld {
 
         SerialPort serial = getSerialPort(runtime);
         try {
-            //serial = new SerialPort("COM8"); //TODO: Find port automatically or ask user to specify it (maybe find it out by asking him to plug it out and back in)
             serial.openPort();
             serial.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 

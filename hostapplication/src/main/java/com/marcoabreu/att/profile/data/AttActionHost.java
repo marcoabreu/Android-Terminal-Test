@@ -5,6 +5,8 @@ import com.marcoabreu.att.engine.Composite;
 import com.marcoabreu.att.host.HostActionCompiler;
 import com.marcoabreu.att.profile.ProfileExecutor;
 
+import java.io.IOException;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,6 +37,12 @@ public class AttActionHost extends AttAction {
                 compiler.executeVoid();
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
+            } finally {
+                try {
+                    compiler.finish();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             return true;

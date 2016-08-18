@@ -57,7 +57,7 @@ public class PairRequestHandler implements BridgeMessageListener{
                 DeviceManager.getInstance().registerPairedDevice((PairedDevice) device);
 
             } catch (Exception ex) {
-                response.setOccuredException(ex);
+                response.setOccurredException(ex);
             }
 
             device.sendResponse(response);

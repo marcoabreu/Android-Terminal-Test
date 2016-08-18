@@ -38,6 +38,8 @@ public abstract class ActionCompiler {
 
     protected abstract Object execute() throws ExecutionException, InterruptedException, IOException, InvocationTargetException, IllegalAccessException;
 
+    public abstract void finish() throws IOException;
+
     public <T> T executeReturn() throws InterruptedException, ExecutionException, IOException, InvocationTargetException, IllegalAccessException {
         return (T)execute();
     }

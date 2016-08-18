@@ -142,8 +142,8 @@ public class DeviceClient implements Closeable, BridgeEndpoint{
                 //Read messages in loop
                 while(true) {
                     BaseMessage message = (BaseMessage) in.readObject();
-                    if(message.getOccuredException() != null) {
-                        onException(message.getOccuredException());
+                    if(message.getOccurredException() != null) {
+                        onException(message.getOccurredException());
                     } else {
                         deviceClient.invokeOnMessage(pairedHost, message);
                     }
