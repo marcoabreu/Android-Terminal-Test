@@ -2,7 +2,6 @@ package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.ui.MainForm;
 import com.marcoabreu.att.utilities.FileHelper;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 

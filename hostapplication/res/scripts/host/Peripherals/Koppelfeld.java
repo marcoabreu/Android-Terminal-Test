@@ -45,21 +45,25 @@ public class Koppelfeld {
     private static void requestCellConnect(Map<String, Integer> connectedCells, Set<String> missingCells, Map<String, Integer> freeCells) {
         if(missingCells.size() > 0) {
             if(missingCells.size() > freeCells.size()) {
-                //TODO: show proper error that too many cells are connected
                 throw new IllegalArgumentException("Not enough free cells available");
             }
 
-            //TODO: Show dialog to show user free cells and ask them to connect the missing cells and provide the respective channel
-            System.out.println("TODO: Let user reconnect cells");
+            //Show dialog to show user free cells and ask them to connect the missing cells
+            StringBuilder sb = new StringBuilder();
 
-            //TODO: Remove this as soon as dialog is implemented - this will just act like it has been reassigned
+            Map<String, Integer> newMapping = new HashMap<>();
+            Iterator<Map.Entry<String, Integer>> freeCellIterator = freeCells.entrySet().iterator();
             for(String cell : missingCells) {
+                Map.Entry<String, Integer> currentFreeCell = freeCellIterator.next();
+                newMapping.put(cell, currentFreeCell.getValue());
+                sb.append("\tReplace " + currentFreeCell.getKey() + " with " + cell + " on channel " + currentFreeCell.getValue() + "\n");
+            }
 
-                Map.Entry<String, Integer> freeCell = freeCells.entrySet().iterator().next();
-                connectedCells.put(cell, freeCell.getValue());
-                freeCells.remove(freeCell.getKey());
+            com.marcoabreu.att.Message.showMessageImpl("The Koppefeld needs some new connections: \n" + sb.toString() + "\nConfirm when you have connected the cells.");
 
-                System.out.println(String.format("Reassigned Channel %d from %s to %s", freeCell.getValue(), freeCell.getKey(), cell));
+            for(Map.Entry<String, Integer> cell : newMapping.entrySet()) {
+                connectedCells.put(cell.getKey(), cell.getValue());
+                System.out.println(String.format("Reassigned Channel %d to %s", cell.getValue(), cell.getKey()));
             }
         }
     }
