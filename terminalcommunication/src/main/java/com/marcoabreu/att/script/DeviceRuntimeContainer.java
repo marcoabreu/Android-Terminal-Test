@@ -29,6 +29,10 @@ public class DeviceRuntimeContainer {
         return this.parameters;
     }
 
+    public <T> T getParameter(String key) {
+        return (T)parameters.get(key);
+    }
+
     public DataStorageDeviceProxy getDataStorage() {
         return this.dataStorage;
     }

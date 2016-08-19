@@ -8,8 +8,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -170,7 +168,8 @@ public class RuntimeCompiler {
      * @return
      */
     private File getJavaCompilerFile() {
-        File javacFile = null;
+        return new File(Configuration.getInstance().getJdk7path());
+        /*File javacFile = null;
         if(Configuration.getInstance().getJdk7path().isEmpty()) {
             //Ask user
             JFileChooser chooser = new JFileChooser();
@@ -191,10 +190,10 @@ public class RuntimeCompiler {
                 throw new RuntimeException("You did not select a javac compiler");
             }
         } else {
-            javacFile = new File(Configuration.getInstance().getJdk7path());
+            javacFile =
         }
 
-        return javacFile;
+        return javacFile;*/
     }
 
     /**
@@ -221,6 +220,8 @@ public class RuntimeCompiler {
      * @return
      */
     private File getDexBatFile() {
+        return new File(Configuration.getInstance().getAndroidSdkPath());
+        /*
         File dexFile = null;
         if(Configuration.getInstance().getAndroidSdkPath().isEmpty()) {
             //Ask user
@@ -245,6 +246,6 @@ public class RuntimeCompiler {
             dexFile = new File(Configuration.getInstance().getAndroidSdkPath());
         }
 
-        return dexFile;
+        return dexFile;*/
     }
 }

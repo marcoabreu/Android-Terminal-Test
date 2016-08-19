@@ -4,7 +4,6 @@ import com.marcoabreu.att.device.CompilerException;
 import com.marcoabreu.att.device.RuntimeCompiler;
 import com.marcoabreu.att.profile.ScriptRuntimeContainer;
 import com.marcoabreu.att.utilities.FileHelper;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -13,12 +12,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * /**
@@ -28,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 public class JavaInterpreter {
     //Inspired by http://android-developers.blogspot.cz/2011/07/custom-class-loading-in-dalvik.html
     private static final String SCRIPTS_HOST_BASE_PATH = "scripts/host";
-    private static final String SCRIPT_LIBS_HOST_BASE_PATH = "scripts/host/libs";
+    private static final String SCRIPT_LIBS_HOST_BASE_PATH = "scripts/host/libs/";
     private static final String DEX_FILENAME = "att-scripts.dex";
     private static final int BUFFER_SIZE = 8 * 1024;
     private static URLClassLoader urlClassLoader;
@@ -78,9 +77,9 @@ public class JavaInterpreter {
      */
     public static void init(/*File classDirectory, Map<String, String> classpathMapping*/) throws IOException, ExecutionException, InterruptedException, CompilerException {
         String basePath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPTS_HOST_BASE_PATH).getPath();
-        String libPath = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPT_LIBS_HOST_BASE_PATH).getPath();
+        File libDir = FileUtils.getFile(FileHelper.getApplicationPath().toUri().getPath(), SCRIPT_LIBS_HOST_BASE_PATH);
         RuntimeCompiler compiler = new RuntimeCompiler(basePath);
-        Pair<File, Map<String, String>> compiledClasses = compiler.convertClass(new File(libPath));
+        Pair<File, Map<String, String>> compiledClasses = compiler.convertClass(libDir);
 
         Map<String, String> classpathMapping = new HashMap<>();
         for(Map.Entry<String, String> entry : compiledClasses.getRight().entrySet()) {
@@ -89,7 +88,19 @@ public class JavaInterpreter {
             classpathMapping.put(replaced, entry.getValue());
         }
 
-        JavaInterpreter.urlClassLoader = new URLClassLoader(new URL[] {compiledClasses.getLeft().toURI().toURL()});
+        //Load all script libs
+        List<URL> libFiles = Arrays.asList(libDir.listFiles((dir, name) -> {
+            return name.endsWith(".jar");
+        })).stream().map(file -> {
+            try {
+                return file.toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
+        libFiles.add(compiledClasses.getLeft().toURI().toURL());
+
+        JavaInterpreter.urlClassLoader = URLClassLoader.newInstance(libFiles.toArray(new URL[libFiles.size()]));
         JavaInterpreter.classpathMapping = classpathMapping;
     }
 }

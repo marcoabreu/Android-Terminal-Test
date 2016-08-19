@@ -1,13 +1,19 @@
 package com.marcoabreu.att.host;
 
 import com.marcoabreu.att.ui.MainForm;
+import com.marcoabreu.att.utilities.Configuration;
 import com.marcoabreu.att.utilities.FileHelper;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXBException;
 import java.io.File;
 
 public class HostApp {
+    private static final Logger LOG = LogManager.getLogger();
     /*
     public static void main(String args[]) {
         System.out.println("Test");
@@ -440,6 +446,52 @@ public class HostApp {
     public static void main(String args[]) {
         LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
         context.setConfigLocation(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "log4j2.xml").toURI());
+
+        try {
+            Configuration.loadConfiguration(new File(new File(FileHelper.getApplicationPath().toFile(), "config"), "config.xml"));
+        } catch (JAXBException e) {
+            LOG.error("Unable to load configuration", e);
+        }
+
+        //Set up config
+        if(Configuration.getInstance().getJdk7path().isEmpty()) {
+            //Ask user
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select javac.exe from JDK7");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                    ".exe files", "exe");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                if(!chooser.getSelectedFile().getName().endsWith("javac.exe")) {
+                    throw new RuntimeException("You need to select the java compiler called javac.exe");
+                }
+
+                Configuration.getInstance().setJdk7path(chooser.getSelectedFile().getAbsolutePath());
+            } else {
+                throw new RuntimeException("You did not select a javac compiler");
+            }
+        }
+
+        if(Configuration.getInstance().getAndroidSdkPath().isEmpty()) {
+            //Ask user
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select dx.bat Android-SDK build-tools");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                    ".bat files", "bat");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                if(!chooser.getSelectedFile().getName().endsWith("dx.bat")) {
+                    throw new RuntimeException("You need to select the dex compiler called dx.bat");
+                }
+
+                Configuration.getInstance().setAndroidSdkPath(chooser.getSelectedFile().getAbsolutePath());
+            } else {
+                throw new RuntimeException("You did not select a dex compiler");
+            }
+        }
+
 
         form = new MainForm();
         form.show();
